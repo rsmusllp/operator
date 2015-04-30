@@ -113,7 +113,7 @@
                             multiline: True
                             background_color: [0,0,0,1]
                             foreground_color: [1,1,1,1]
-                            focus: True
+                            focus: False
                             hint_text: 'Put your notes here'
                     BoxLayout:
                         id: 'toolPanelLayout'
@@ -145,7 +145,7 @@
                             multiline: True
                             background_color: [0,0,0,1]
                             foreground_color: [1,1,1,1]
-                            focus: True
+                            focus: False
                             hint_text: 'This is where the messages will go'
                     BoxLayout:
                         id: 'toolPanelLayout'
@@ -177,7 +177,7 @@
                             multiline: True
                             background_color: [0,0,0,1]
                             foreground_color: [1,1,1,1]
-                            focus: True
+                            focus: False
                             hint_text: 'This is where the voice recorder will go'
                     BoxLayout:
                         id: 'toolPanelLayout'
@@ -200,17 +200,29 @@
                     id: 'defaultLayout'
                     orientation: 'vertical'
                     spacing: 2
-                    BoxLayout: 
+                    GridLayout: 
                         id: 'soundboardPanelLayout'
-                        orientation: 'horizontal'
+                        rows: 3
+                        cols: 3
                         size_hint: 1, .8
-                        TextInput:
-                            size_hint: 1, .85
-                            multiline: True
-                            background_color: [0,0,0,1]
-                            foreground_color: [1,1,1,1]
-                            focus: True
-                            hint_text: 'This is where the soundboard will go'
+                        Button:
+                            text: 'Sad Trombone'
+                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                        Button:
+                            text: 'SpeedLane Turnstyle'
+                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                        Button:
+                            text: 'TriLock Turnstyle'
+                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                        Button:
+                            text: 'THG Turnstyle'
+                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                        Button:
+                            text: 'Phone Ring'
+                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                        Button:
+                            text: 'Diversion'
+                            on_release: root.do_play_sound('audio/fart.wav')
                     BoxLayout:
                         id: 'toolPanelLayout'
                         orientation: 'horizontal'
@@ -236,13 +248,15 @@
                         id: 'checklistPanelLayout'
                         orientation: 'horizontal'
                         size_hint: 1, .8
-                        TextInput:
-                            size_hint: 1, .85
-                            multiline: True
-                            background_color: [0,0,0,1]
-                            foreground_color: [1,1,1,1]
-                            focus: True
-                            hint_text: 'There will be additional options to use a checklist here'
+                        Button:
+                            text: 'Physical Security Assessment'
+                            on_release: _screen_manager.current = 'Physical_Assessment'
+                        Button:
+                            text: 'PCI Audit'
+                            on_release: _screen_manager.current = 'PCI_Audit'
+                        Button:
+                            text: 'HIPAA Audit'
+                            on_release: _screen_manager.current = 'HIPAA_Audit'
                     BoxLayout:
                         id: 'toolPanelLayout'
                         orientation: 'horizontal'
@@ -259,6 +273,109 @@
                             background_down: 'images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
+                name: 'Physical_Assessment'
+                BoxLayout:
+                    id: 'defaultLayout'
+                    orientation: 'vertical'
+                    spacing: 2
+                    BoxLayout: 
+                        id: 'physicalChecklistPanelLayout'
+                        orientation: 'horizontal'
+                        size_hint: 1, .8
+                        Button:
+                            text: 'Physical Security Assessment'
+                            on_release: _screen_manager.current = 'Phsyical_Assessment'
+                        Button:
+                            text: 'PCI Audit'
+                            on_release: _screen_manager.current = 'PCI_Audit'
+                        Button:
+                            text: 'HIPAA Audit'
+                            on_release: _screen_manager.current = 'HIPAA_Audit'
+                    BoxLayout:
+                        id: 'toolPanelLayout'
+                        orientation: 'horizontal'
+                        size_hint: 1, .1
+                        Button:
+                            background_normal: 'images/nav/camera.png'
+                            background_down: 'images/nav/camera.png' 
+                        Button:
+                            background_normal: 'images/nav/map.png'
+                            background_down: 'images/nav/map.png'
+                            on_release: _screen_manager.current = 'Home'
+                        Button:
+                            background_normal: 'images/nav/menu.png'
+                            background_down: 'images/nav/menu.png'
+                            on_release: _screen_manager.current = 'Menu'
+            Screen:
+                name: 'PCI_Audit'
+                BoxLayout:
+                    id: 'defaultLayout'
+                    orientation: 'vertical'
+                    spacing: 2
+                    BoxLayout: 
+                        id: 'pciChecklistPanelLayout'
+                        orientation: 'horizontal'
+                        size_hint: 1, .8
+                        Button:
+                            text: 'Physical Security Assessment'
+                            on_release: _screen_manager.current = 'Phsyical_Assessment'
+                        Button:
+                            text: 'PCI Audit'
+                            on_release: _screen_manager.current = 'PCI_Audit'
+                        Button:
+                            text: 'HIPAA Audit'
+                            on_release: _screen_manager.current = 'HIPAA_Audit'
+                    BoxLayout:
+                        id: 'toolPanelLayout'
+                        orientation: 'horizontal'
+                        size_hint: 1, .1
+                        Button:
+                            background_normal: 'images/nav/camera.png'
+                            background_down: 'images/nav/camera.png' 
+                        Button:
+                            background_normal: 'images/nav/map.png'
+                            background_down: 'images/nav/map.png'
+                            on_release: _screen_manager.current = 'Home'
+                        Button:
+                            background_normal: 'images/nav/menu.png'
+                            background_down: 'images/nav/menu.png'
+                            on_release: _screen_manager.current = 'Menu'
+            Screen:
+                name: 'HIPAA_Audit'
+                BoxLayout:
+                    id: 'defaultLayout'
+                    orientation: 'vertical'
+                    spacing: 2
+                    BoxLayout: 
+                        id: 'hipaaChecklistPanelLayout'
+                        orientation: 'horizontal'
+                        size_hint: 1, .8
+                        Button:
+                            text: 'Physical Security Assessment'
+                            on_release: _screen_manager.current = 'Phsyical_Assessment'
+                        Button:
+                            text: 'PCI Audit'
+                            on_release: _screen_manager.current = 'PCI_Audit'
+                        Button:
+                            text: 'HIPAA Audit'
+                            on_release: _screen_manager.current = 'HIPAA_Audit'
+                    BoxLayout:
+                        id: 'toolPanelLayout'
+                        orientation: 'horizontal'
+                        size_hint: 1, .1
+                        Button:
+                            background_normal: 'images/nav/camera.png'
+                            background_down: 'images/nav/camera.png' 
+                        Button:
+                            background_normal: 'images/nav/map.png'
+                            background_down: 'images/nav/map.png'
+                            on_release: _screen_manager.current = 'Home'
+                        Button:
+                            background_normal: 'images/nav/menu.png'
+                            background_down: 'images/nav/menu.png'
+                            on_release: _screen_manager.current = 'Menu'
+            
+            Screen:
                 name: 'Import_KML'
                 BoxLayout:
                     id: 'defaultLayout'
@@ -273,7 +390,7 @@
                             multiline: True
                             background_color: [0,0,0,1]
                             foreground_color: [1,1,1,1]
-                            focus: True
+                            focus: False
                             hint_text: 'This is where the KML import will happen'
                     BoxLayout:
                         id: 'toolPanelLayout'
@@ -305,7 +422,7 @@
                             multiline: True
                             background_color: [0,0,0,1]
                             foreground_color: [1,1,1,1]
-                            focus: True
+                            focus: False
                             hint_text: 'Export KML files here'
                     BoxLayout:
                         id: 'toolPanelLayout'
@@ -337,7 +454,7 @@
                             multiline: True
                             background_color: [0,0,0,1]
                             foreground_color: [1,1,1,1]
-                            focus: True
+                            focus: False
                             hint_text: 'Manage campaigns here'
                     BoxLayout:
                         id: 'toolPanelLayout'
