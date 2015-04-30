@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 from kivy.app import App
+from kivy.core.audio import SoundLoader
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
-from kivy.core.audio import SoundLoader
 
 class Operator(AnchorLayout):
+	
 	def do_play_sound(self, sound_file):
 		# load a sound and play it
 		sound = SoundLoader.load(sound_file)
@@ -22,8 +23,8 @@ class MainApp(App):
     	return True
 
     def on_resume(self):
-
-    	return True
+    	pass
+    	return
 
 if __name__ == '__main__':
     MainApp().run()

@@ -15,7 +15,7 @@
                         orientation: 'horizontal'
                         size_hint: 1, .8
                         Image:
-                            source: 'images/maps/operator_background.png'
+                            source: 'data/images/maps/operator_background.png'
                             allow_stretch: True
                             keep_ratio: False
                     BoxLayout:
@@ -23,14 +23,14 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
+                            background_normal: 'data/images/nav/camera.png'
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'Menu'
@@ -52,51 +52,51 @@
                                     background_normal: ''
                                     background_down: ''
                                 Button:
-                                    background_normal: 'images/settings/notes.png'
-                                    background_down: 'images/settings/notes.png'
+                                    background_normal: 'data/images/settings/notes.png'
+                                    background_down: 'data/images/settings/notes.png'
                                     on_release: _screen_manager.current = 'Notes'
                                 Button:
-                                    background_normal: 'images/settings/messages.png'
-                                    background_down: 'images/settings/messages.png'
+                                    background_normal: 'data/images/settings/messages.png'
+                                    background_down: 'data/images/settings/messages.png'
                                     on_release: _screen_manager.current = 'Messages'
                                 Button:
-                                    background_normal: 'images/settings/recorder.png'
-                                    background_down: 'images/settings/recorder.png'
+                                    background_normal: 'data/images/settings/recorder.png'
+                                    background_down: 'data/images/settings/recorder.png'
                                     on_release: _screen_manager.current = 'Recorder'
                                 Button:
-                                    background_normal: 'images/settings/soundboard.png'
-                                    background_down: 'images/settings/soundboard.png'
+                                    background_normal: 'data/images/settings/soundboard.png'
+                                    background_down: 'data/images/settings/soundboard.png'
                                     on_release: _screen_manager.current = 'Soundboard'
                                 Button:
-                                    background_normal: 'images/settings/checklist.png'
-                                    background_down: 'images/settings/checklist.png'
+                                    background_normal: 'data/images/settings/checklist.png'
+                                    background_down: 'data/images/settings/checklist.png'
                                     on_release: _screen_manager.current = 'Checklist'                       
                                 Button:
-                                    background_normal: 'images/settings/import_kml.png'
-                                    background_down: 'images/settings/import_kml'
+                                    background_normal: 'data/images/settings/import_kml.png'
+                                    background_down: 'data/images/settings/import_kml'
                                     on_release: _screen_manager.current = 'Import_KML'                                
                                 Button:
-                                    background_normal: 'images/settings/export_kml.png'
-                                    background_down: 'images/settings/export_kml.png'
+                                    background_normal: 'data/images/settings/export_kml.png'
+                                    background_down: 'data/images/settings/export_kml.png'
                                     on_release: _screen_manager.current = 'Export_KML'                                
                                 Button:
-                                    background_normal: 'images/settings/campaigns.png'
-                                    background_down: 'images/settings/campaigns.png'
+                                    background_normal: 'data/images/settings/campaigns.png'
+                                    background_down: 'data/images/settings/campaigns.png'
                                     on_release: _screen_manager.current = 'Campaigns'                                
                     BoxLayout:
                         id: 'toolPanelLayout'
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'Notes'
@@ -120,15 +120,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'Messages'
@@ -152,15 +152,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'Recorder'
@@ -184,15 +184,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'Soundboard'
@@ -207,36 +207,36 @@
                         size_hint: 1, .8
                         Button:
                             text: 'Sad Trombone'
-                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
                         Button:
                             text: 'SpeedLane Turnstyle'
-                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
                         Button:
                             text: 'TriLock Turnstyle'
-                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
                         Button:
                             text: 'THG Turnstyle'
-                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
                         Button:
                             text: 'Phone Ring'
-                            on_release: root.do_play_sound('audio/sad_trombone.wav')
+                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
                         Button:
                             text: 'Diversion'
-                            on_release: root.do_play_sound('audio/fart.wav')
+                            on_release: root.do_play_sound('data/audio/fart.wav')
                     BoxLayout:
                         id: 'toolPanelLayout'
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'Checklist'
@@ -262,15 +262,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'Physical_Assessment'
@@ -296,15 +296,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'PCI_Audit'
@@ -330,15 +330,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'HIPAA_Audit'
@@ -364,15 +364,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             
             Screen:
@@ -397,15 +397,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'Export_KML'
@@ -429,15 +429,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'
             Screen:
                 name: 'Campaigns'
@@ -461,15 +461,15 @@
                         orientation: 'horizontal'
                         size_hint: 1, .1
                         Button:
-                            background_normal: 'images/nav/camera.png'
-                            background_down: 'images/nav/camera.png' 
+                            background_normal: 'data/images/nav/camera.png'
+                            background_down: 'data/images/nav/camera.png' 
                         Button:
-                            background_normal: 'images/nav/map.png'
-                            background_down: 'images/nav/map.png'
+                            background_normal: 'data/images/nav/map.png'
+                            background_down: 'data/images/nav/map.png'
                             on_release: _screen_manager.current = 'Home'
                         Button:
-                            background_normal: 'images/nav/menu.png'
-                            background_down: 'images/nav/menu.png'
+                            background_normal: 'data/images/nav/menu.png'
+                            background_down: 'data/images/nav/menu.png'
                             on_release: _screen_manager.current = 'Menu'                                                                                                                                                                                                    
 
     AnchorLayout:
@@ -480,11 +480,11 @@
             orientation: 'horizontal'
             size_hint: 1, .1
             Button:
-                background_normal: 'images/status/good.jpg'
-                background_down: 'images/status/good_pressed.jpg'
+                background_normal: 'data/images/status/good.jpg'
+                background_down: 'data/images/status/good_pressed.jpg'
             Button:
-                background_normal: 'images/status/neutral.jpg'
-                background_down: 'images/status/neutral_pressed.jpg'
+                background_normal: 'data/images/status/neutral.jpg'
+                background_down: 'data/images/status/neutral_pressed.jpg'
             Button:
-                background_normal: 'images/status/bad.jpg'
-                background_down: 'images/status/bad_pressed.jpg'
+                background_normal: 'data/images/status/bad.jpg'
+                background_down: 'data/images/status/bad_pressed.jpg'
