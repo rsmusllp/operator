@@ -21,16 +21,12 @@
                 Screen:
                     name: 'Home'
                     BoxLayout:
-                        id: 'defaultLayout'
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout:
-                            id: 'mapPanelLayout'
-                            orientation: 'horizontal'
-                            Image:
-                                source: 'data/images/maps/operator_background.png'
-                                allow_stretch: True
-                                keep_ratio: False
+                        id: 'mapPanelLayout'
+                        orientation: 'horizontal'
+                        Image:
+                            source: 'data/images/maps/operator_background.png'
+                            allow_stretch: True
+                            keep_ratio: False
                 Screen:
                     name: 'Menu'
                     BoxLayout:
@@ -89,7 +85,6 @@
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             TextInput:
-                                size_hint: 1, .85
                                 multiline: True
                                 background_color: [0,0,0,1]
                                 foreground_color: [1,1,1,1]
@@ -292,7 +287,8 @@
             orientation: 'horizontal'
             Button:
                 background_normal: 'data/images/nav/camera.png'
-                background_down: 'data/images/nav/camera.png' 
+                background_down: 'data/images/nav/camera.png'
+                on_release: root.do_take_picture()
             Button:
                 background_normal: 'data/images/nav/map.png'
                 background_down: 'data/images/nav/map.png'

@@ -1,481 +1,7 @@
 <Operator>:
-    AnchorLayout:
-        anchor_x: 'center'
-        anchor_y: 'bottom'
-        ScreenManager:
-            id: _screen_manager
-            Screen:
-                name: 'Home'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout:
-                        id: 'mapPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        Image:
-                            source: 'data/images/maps/operator_background.png'
-                            allow_stretch: True
-                            keep_ratio: False
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            on_release: root.do_take_picture()
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'Menu'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout:
-                        id: 'menuPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        ScrollView:
-                            do_scroll_x: False
-                            BoxLayout:
-                                id: 'settingsLayout'
-                                orientation: 'vertical'
-                                size_hint: 1, .99999
-                                Button:
-                                    background_normal: ''
-                                    background_down: ''
-                                Button:
-                                    background_normal: 'data/images/settings/notes.png'
-                                    background_down: 'data/images/settings/notes.png'
-                                    on_release: _screen_manager.current = 'Notes'
-                                Button:
-                                    background_normal: 'data/images/settings/messages.png'
-                                    background_down: 'data/images/settings/messages.png'
-                                    on_release: _screen_manager.current = 'Messages'
-                                Button:
-                                    background_normal: 'data/images/settings/recorder.png'
-                                    background_down: 'data/images/settings/recorder.png'
-                                    on_release: _screen_manager.current = 'Recorder'
-                                Button:
-                                    background_normal: 'data/images/settings/soundboard.png'
-                                    background_down: 'data/images/settings/soundboard.png'
-                                    on_release: _screen_manager.current = 'Soundboard'
-                                Button:
-                                    background_normal: 'data/images/settings/checklist.png'
-                                    background_down: 'data/images/settings/checklist.png'
-                                    on_release: _screen_manager.current = 'Checklist'                       
-                                Button:
-                                    background_normal: 'data/images/settings/import_kml.png'
-                                    background_down: 'data/images/settings/import_kml'
-                                    on_release: _screen_manager.current = 'Import_KML'                                
-                                Button:
-                                    background_normal: 'data/images/settings/export_kml.png'
-                                    background_down: 'data/images/settings/export_kml.png'
-                                    on_release: _screen_manager.current = 'Export_KML'                                
-                                Button:
-                                    background_normal: 'data/images/settings/campaigns.png'
-                                    background_down: 'data/images/settings/campaigns.png'
-                                    on_release: _screen_manager.current = 'Campaigns'                                
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'Notes'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'notesPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        TextInput:
-                            size_hint: 1, .85
-                            multiline: True
-                            background_color: [0,0,0,1]
-                            foreground_color: [1,1,1,1]
-                            focus: False
-                            hint_text: 'Put your notes here'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'Messages'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'messagePanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        TextInput:
-                            size_hint: 1, .85
-                            multiline: True
-                            background_color: [0,0,0,1]
-                            foreground_color: [1,1,1,1]
-                            focus: False
-                            hint_text: 'This is where the messages will go'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'Recorder'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'recorderPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        TextInput:
-                            size_hint: 1, .85
-                            multiline: True
-                            background_color: [0,0,0,1]
-                            foreground_color: [1,1,1,1]
-                            focus: False
-                            hint_text: 'This is where the voice recorder will go'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'Soundboard'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    GridLayout: 
-                        id: 'soundboardPanelLayout'
-                        rows: 3
-                        cols: 3
-                        size_hint: 1, .8
-                        Button:
-                            text: 'Sad Trombone'
-                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                        Button:
-                            text: 'SpeedLane Turnstyle'
-                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                        Button:
-                            text: 'TriLock Turnstyle'
-                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                        Button:
-                            text: 'THG Turnstyle'
-                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                        Button:
-                            text: 'Phone Ring'
-                            on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                        Button:
-                            text: 'Diversion'
-                            on_release: root.do_play_sound('data/audio/fart.wav')
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'Checklist'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'checklistPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        Button:
-                            text: 'Physical Security Assessment'
-                            on_release: _screen_manager.current = 'Physical_Assessment'
-                        Button:
-                            text: 'PCI Audit'
-                            on_release: _screen_manager.current = 'PCI_Audit'
-                        Button:
-                            text: 'HIPAA Audit'
-                            on_release: _screen_manager.current = 'HIPAA_Audit'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'Physical_Assessment'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'physicalChecklistPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        Button:
-                            text: 'Physical Security Assessment'
-                            on_release: _screen_manager.current = 'Phsyical_Assessment'
-                        Button:
-                            text: 'PCI Audit'
-                            on_release: _screen_manager.current = 'PCI_Audit'
-                        Button:
-                            text: 'HIPAA Audit'
-                            on_release: _screen_manager.current = 'HIPAA_Audit'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'PCI_Audit'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'pciChecklistPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        Button:
-                            text: 'Physical Security Assessment'
-                            on_release: _screen_manager.current = 'Phsyical_Assessment'
-                        Button:
-                            text: 'PCI Audit'
-                            on_release: _screen_manager.current = 'PCI_Audit'
-                        Button:
-                            text: 'HIPAA Audit'
-                            on_release: _screen_manager.current = 'HIPAA_Audit'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'HIPAA_Audit'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'hipaaChecklistPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        Button:
-                            text: 'Physical Security Assessment'
-                            on_release: _screen_manager.current = 'Phsyical_Assessment'
-                        Button:
-                            text: 'PCI Audit'
-                            on_release: _screen_manager.current = 'PCI_Audit'
-                        Button:
-                            text: 'HIPAA Audit'
-                            on_release: _screen_manager.current = 'HIPAA_Audit'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            
-            Screen:
-                name: 'Import_KML'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'importKMLPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        TextInput:
-                            size_hint: 1, .85
-                            multiline: True
-                            background_color: [0,0,0,1]
-                            foreground_color: [1,1,1,1]
-                            focus: False
-                            hint_text: 'This is where the KML import will happen'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'Export_KML'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'exportKMLPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        TextInput:
-                            size_hint: 1, .85
-                            multiline: True
-                            background_color: [0,0,0,1]
-                            foreground_color: [1,1,1,1]
-                            focus: False
-                            hint_text: 'Export KML files here'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'
-            Screen:
-                name: 'Campaigns'
-                BoxLayout:
-                    id: 'defaultLayout'
-                    orientation: 'vertical'
-                    spacing: 2
-                    BoxLayout: 
-                        id: 'campaignsPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .8
-                        TextInput:
-                            size_hint: 1, .85
-                            multiline: True
-                            background_color: [0,0,0,1]
-                            foreground_color: [1,1,1,1]
-                            focus: False
-                            hint_text: 'Manage campaigns here'
-                    BoxLayout:
-                        id: 'toolPanelLayout'
-                        orientation: 'horizontal'
-                        size_hint: 1, .1
-                        Button:
-                            background_normal: 'data/images/nav/camera.png'
-                            background_down: 'data/images/nav/camera.png' 
-                        Button:
-                            background_normal: 'data/images/nav/map.png'
-                            background_down: 'data/images/nav/map.png'
-                            on_release: _screen_manager.current = 'Home'
-                        Button:
-                            background_normal: 'data/images/nav/menu.png'
-                            background_down: 'data/images/nav/menu.png'
-                            on_release: _screen_manager.current = 'Menu'                                                                                                                                                                                                    
-
-    AnchorLayout:
-        anchor_x: 'center'
-        anchor_y: 'top'
+    BoxLayout:
+        id: 'rootLayout'
+        orientation: 'vertical'
         BoxLayout:
             id: 'statusPanelLayout'
             orientation: 'horizontal'
@@ -489,3 +15,285 @@
             Button:
                 background_normal: 'data/images/status/bad.jpg'
                 background_down: 'data/images/status/bad_pressed.jpg'
+        BoxLayout
+            ScreenManager:
+                id: _screen_manager
+                Screen:
+                    name: 'Home'
+                    BoxLayout:
+                        id: 'mapPanelLayout'
+                        orientation: 'horizontal'
+                        Image:
+                            source: 'data/images/maps/operator_background.png'
+                            allow_stretch: True
+                            keep_ratio: False
+                Screen:
+                    name: 'Menu'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout:
+                            id: 'menuPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            ScrollView:
+                                do_scroll_x: False
+                                BoxLayout:
+                                    id: 'settingsLayout'
+                                    orientation: 'vertical'
+                                    Button:
+                                        background_normal: 'data/images/settings/notes.png'
+                                        background_down: 'data/images/settings/notes.png'
+                                        on_release: _screen_manager.current = 'Notes'
+                                    Button:
+                                        background_normal: 'data/images/settings/messages.png'
+                                        background_down: 'data/images/settings/messages.png'
+                                        on_release: _screen_manager.current = 'Messages'
+                                    Button:
+                                        background_normal: 'data/images/settings/recorder.png'
+                                        background_down: 'data/images/settings/recorder.png'
+                                        on_release: _screen_manager.current = 'Recorder'
+                                    Button:
+                                        background_normal: 'data/images/settings/soundboard.png'
+                                        background_down: 'data/images/settings/soundboard.png'
+                                        on_release: _screen_manager.current = 'Soundboard'
+                                    Button:
+                                        background_normal: 'data/images/settings/checklist.png'
+                                        background_down: 'data/images/settings/checklist.png'
+                                        on_release: _screen_manager.current = 'Checklist'                       
+                                    Button:
+                                        background_normal: 'data/images/settings/import_kml.png'
+                                        background_down: 'data/images/settings/import_kml'
+                                        on_release: _screen_manager.current = 'Import_KML'                                
+                                    Button:
+                                        background_normal: 'data/images/settings/export_kml.png'
+                                        background_down: 'data/images/settings/export_kml.png'
+                                        on_release: _screen_manager.current = 'Export_KML'                                
+                                    Button:
+                                        background_normal: 'data/images/settings/campaigns.png'
+                                        background_down: 'data/images/settings/campaigns.png'
+                                        on_release: _screen_manager.current = 'Campaigns'                                
+                Screen:
+                    name: 'Notes'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'notesPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            TextInput:
+                                multiline: True
+                                background_color: [0,0,0,1]
+                                foreground_color: [1,1,1,1]
+                                focus: False
+                                hint_text: 'Put your notes here'
+                Screen:
+                    name: 'Messages'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'messagePanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            TextInput:
+                                size_hint: 1, .85
+                                multiline: True
+                                background_color: [0,0,0,1]
+                                foreground_color: [1,1,1,1]
+                                focus: False
+                                hint_text: 'This is where the messages will go'
+                Screen:
+                    name: 'Recorder'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'recorderPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            TextInput:
+                                size_hint: 1, .85
+                                multiline: True
+                                background_color: [0,0,0,1]
+                                foreground_color: [1,1,1,1]
+                                focus: False
+                                hint_text: 'This is where the voice recorder will go'
+                Screen:
+                    name: 'Soundboard'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        GridLayout: 
+                            id: 'soundboardPanelLayout'
+                            rows: 3
+                            cols: 3
+                            size_hint: 1, .8
+                            Button:
+                                text: 'Sad Trombone'
+                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
+                            Button:
+                                text: 'SpeedLane Turnstyle'
+                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
+                            Button:
+                                text: 'TriLock Turnstyle'
+                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
+                            Button:
+                                text: 'THG Turnstyle'
+                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
+                            Button:
+                                text: 'Phone Ring'
+                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
+                            Button:
+                                text: 'Diversion'
+                                on_release: root.do_play_sound('data/audio/fart.wav')
+                Screen:
+                    name: 'Checklist'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'checklistPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            Button:
+                                text: 'Physical Security Assessment'
+                                on_release: _screen_manager.current = 'Physical_Assessment'
+                            Button:
+                                text: 'PCI Audit'
+                                on_release: _screen_manager.current = 'PCI_Audit'
+                            Button:
+                                text: 'HIPAA Audit'
+                                on_release: _screen_manager.current = 'HIPAA_Audit'
+                Screen:
+                    name: 'Physical_Assessment'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'physicalChecklistPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            Button:
+                                text: 'Physical Security Assessment'
+                                on_release: _screen_manager.current = 'Phsyical_Assessment'
+                            Button:
+                                text: 'PCI Audit'
+                                on_release: _screen_manager.current = 'PCI_Audit'
+                            Button:
+                                text: 'HIPAA Audit'
+                                on_release: _screen_manager.current = 'HIPAA_Audit'
+                Screen:
+                    name: 'PCI_Audit'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'pciChecklistPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            Button:
+                                text: 'Physical Security Assessment'
+                                on_release: _screen_manager.current = 'Phsyical_Assessment'
+                            Button:
+                                text: 'PCI Audit'
+                                on_release: _screen_manager.current = 'PCI_Audit'
+                            Button:
+                                text: 'HIPAA Audit'
+                                on_release: _screen_manager.current = 'HIPAA_Audit'
+                Screen:
+                    name: 'HIPAA_Audit'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'hipaaChecklistPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            Button:
+                                text: 'Physical Security Assessment'
+                                on_release: _screen_manager.current = 'Phsyical_Assessment'
+                            Button:
+                                text: 'PCI Audit'
+                                on_release: _screen_manager.current = 'PCI_Audit'
+                            Button:
+                                text: 'HIPAA Audit'
+                                on_release: _screen_manager.current = 'HIPAA_Audit'
+                
+                Screen:
+                    name: 'Import_KML'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'importKMLPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            TextInput:
+                                size_hint: 1, .85
+                                multiline: True
+                                background_color: [0,0,0,1]
+                                foreground_color: [1,1,1,1]
+                                focus: False
+                                hint_text: 'This is where the KML import will happen'
+                Screen:
+                    name: 'Export_KML'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'exportKMLPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            TextInput:
+                                size_hint: 1, .85
+                                multiline: True
+                                background_color: [0,0,0,1]
+                                foreground_color: [1,1,1,1]
+                                focus: False
+                                hint_text: 'Export KML files here'
+                Screen:
+                    name: 'Campaigns'
+                    BoxLayout:
+                        id: 'defaultLayout'
+                        orientation: 'vertical'
+                        spacing: 2
+                        BoxLayout: 
+                            id: 'campaignsPanelLayout'
+                            orientation: 'horizontal'
+                            size_hint: 1, .8
+                            TextInput:
+                                size_hint: 1, .85
+                                multiline: True
+                                background_color: [0,0,0,1]
+                                foreground_color: [1,1,1,1]
+                                focus: False
+                                hint_text: 'Manage campaigns here'
+        BoxLayout:
+            size_hint: 1, .1
+            id: 'toolPanelLayout'
+            orientation: 'horizontal'
+            Button:
+                background_normal: 'data/images/nav/camera.png'
+                background_down: 'data/images/nav/camera.png'
+                on_release: root.do_take_picture()
+            Button:
+                background_normal: 'data/images/nav/map.png'
+                background_down: 'data/images/nav/map.png'
+                on_release: _screen_manager.current = 'Home'
+            Button:
+                background_normal: 'data/images/nav/menu.png'
+                background_down: 'data/images/nav/menu.png'
+                on_release: _screen_manager.current = 'Menu'
