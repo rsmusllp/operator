@@ -14,7 +14,7 @@ Map Overlays w/ KML support
 
 Historical Tracking - GPS for operatives
 
-Note Taking*
+~~Note Taking~~
 
 Messaging Integration
 
