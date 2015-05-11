@@ -2,7 +2,9 @@
 
 Real Time Map
 
-Camera w/ blind option
+~~Camera~~
+
+Blind option for camera
 
 Status Tracker for operatives - red, yellow, green status
 
