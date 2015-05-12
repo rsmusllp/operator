@@ -1,3 +1,6 @@
+<Map>:
+    id: 'googleMapWidget'
+
 <Operator>:
     BoxLayout:
         id: 'rootLayout'
@@ -23,10 +26,8 @@
                     BoxLayout:
                         id: 'mapPanelLayout'
                         orientation: 'horizontal'
-                        Image:
-                            source: 'data/images/maps/operator_background.png'
-                            allow_stretch: True
-                            keep_ratio: False
+                        Map:
+                            id: 'googleMapWidget'
                 Screen:
                     name: 'Menu'
                     BoxLayout:

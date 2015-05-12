@@ -1,12 +1,6 @@
 [app]
-
-# (str) Title of your application
 title = SecureState Operator
-
-# (str) Package name
-package.name = operator_map_test
-
-# (str) Package domain (needed for android/ios packaging)
+package.name = operator
 package.domain = com.ss
 
 # (str) Source code where the main.py live
@@ -54,13 +48,9 @@ orientation = all
 # (bool) Indicate if the application should be fullscreen or not
 fullscreen = 1
 
-
 #
 # Android specific
 #
-
-# (list) Permissions
-android.permissions = INTERNET,CAMERA,RECORD_AUDIO
 
 # (int) Android API to use
 #android.api = 14
@@ -126,28 +116,11 @@ android.permissions = INTERNET,CAMERA,RECORD_AUDIO
 # Don't forget to add the WAKE_LOCK permission if you set this to True
 #android.wakelock = False
 
-# (list) Android application meta-data to set (key=value format)
-#android.meta_data =
-com.google.android.maps.v2.API_KEY = AIzaSyAgIbvskYAyBvZc-eTYV3plSifbf9oAgOs
-
 # (list) Android library project to add (will be added in the
 # project.properties automatically.)
-#android.library_references =
-
-#
-# iOS specific
-#
-
-# (str) Name of the certificate to use for signing the debug version
-# Get a list of available identities: buildozer ios list_identities
-#ios.codesign.debug = "iPhone Developer: <lastname> <firstname> (<hexstring>)"
-
-# (str) Name of the certificate to use for signing the release version
-#ios.codesign.release = %(ios.codesign.debug)s
-
+android.library_references = gmaps/libs/android/google-play-services_lib
 
 [buildozer]
-
 # (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
 log_level = 1
 
@@ -192,3 +165,16 @@ warn_on_root = 1
 #    Then, invoke the command line with the "demo" profile:
 #
 #buildozer --profile demo android debug
+
+[app:android.permissions]
+INTERNET
+ACCESS_NETWORK_STATE
+WRITE_EXTERNAL_STORAGE
+ACCESS_COARSE_LOCATION
+ACCESS_FINE_LOCATION
+com.google.android.providers.gsf.permission.READ_GSERVICES
+com.google.android.providers.gsf.permission.WRITE_GSERVICES
+
+[app:android.meta_data]
+com.google.android.maps.v2.API_KEY = AIzaSyBftkOhzcilJqgGVghFdq9eTMsDGdIwAHE
+surface.transparent = 1

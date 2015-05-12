@@ -6,6 +6,8 @@ import logging
 import os
 import time
 
+import gmaps
+
 from kivy import platform
 from kivy.app import App
 from kivy.core.audio import SoundLoader
@@ -16,6 +18,9 @@ on_android = False
 if platform == 'android':
 	from plyer import camera
 	on_android = True
+
+class Map(gmaps.GMap):
+	pass
 
 class Operator(BoxLayout):
 	def __init__(self, *args, **kwargs):
