@@ -12,14 +12,14 @@
             size: self.size
 
 <MapWidget>:
-    id: 'map_widget'
+    id: map_widget
 
 <RootWidget>:
     BoxLayout:
-        id: 'root_widget'
+        id: root_widget
         orientation: 'vertical'
         BoxLayout:
-            id: 'statusPanelLayout'
+            id: status_panel_layout
             orientation: 'horizontal'
             size_hint: 1, .1
             Button:
@@ -37,7 +37,7 @@
                 Screen:
                     name: 'Home'
                     FloatLayout:
-                        id: 'mapPanelLayout'
+                        id: map_panel_layout
                         MapWidget:
                             id: map_widget
                         Toolbar:
@@ -46,17 +46,17 @@
                 Screen:
                     name: 'Menu'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         BoxLayout:
-                            id: 'menuPanelLayout'
+                            id: menu_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             ScrollView:
                                 do_scroll_x: False
                                 BoxLayout:
-                                    id: 'settingsLayout'
+                                    id: settings_layout
                                     orientation: 'vertical'
                                     Button:
                                         background_normal: 'data/images/settings/notes.png'
@@ -77,27 +77,19 @@
                                     Button:
                                         background_normal: 'data/images/settings/checklist.png'
                                         background_down: 'data/images/settings/checklist.png'
-                                        on_release: _screen_manager.current = 'Checklist'                       
-                                    Button:
-                                        background_normal: 'data/images/settings/import_kml.png'
-                                        background_down: 'data/images/settings/import_kml'
-                                        on_release: _screen_manager.current = 'Import_KML'                                
-                                    Button:
-                                        background_normal: 'data/images/settings/export_kml.png'
-                                        background_down: 'data/images/settings/export_kml.png'
-                                        on_release: _screen_manager.current = 'Export_KML'                                
+                                        on_release: _screen_manager.current = 'Checklist'
                                     Button:
                                         background_normal: 'data/images/settings/campaigns.png'
                                         background_down: 'data/images/settings/campaigns.png'
-                                        on_release: _screen_manager.current = 'Campaigns'                                
+                                        on_release: _screen_manager.current = 'Campaigns'
                 Screen:
                     name: 'Notes'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         BoxLayout: 
-                            id: 'notesPanelLayout'
+                            id: notes_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             TextInput:
@@ -109,11 +101,11 @@
                 Screen:
                     name: 'Messages'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         BoxLayout: 
-                            id: 'messagePanelLayout'
+                            id: message_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             TextInput:
@@ -126,11 +118,11 @@
                 Screen:
                     name: 'Recorder'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         BoxLayout: 
-                            id: 'recorderPanelLayout'
+                            id: recorder_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             TextInput:
@@ -143,11 +135,11 @@
                 Screen:
                     name: 'Soundboard'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         GridLayout: 
-                            id: 'soundboardPanelLayout'
+                            id: soundboard_panel_layout
                             rows: 3
                             cols: 3
                             size_hint: 1, .8
@@ -172,11 +164,11 @@
                 Screen:
                     name: 'Checklist'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         BoxLayout: 
-                            id: 'checklistPanelLayout'
+                            id: checklist_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             Button:
@@ -191,11 +183,11 @@
                 Screen:
                     name: 'Physical_Assessment'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         BoxLayout: 
-                            id: 'physicalChecklistPanelLayout'
+                            id: physical_checklist_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             Button:
@@ -210,11 +202,11 @@
                 Screen:
                     name: 'PCI_Audit'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         BoxLayout: 
-                            id: 'pciChecklistPanelLayout'
+                            id: pci_checklist_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             Button:
@@ -229,11 +221,11 @@
                 Screen:
                     name: 'HIPAA_Audit'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         BoxLayout: 
-                            id: 'hipaaChecklistPanelLayout'
+                            id: hipaa_checklist_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             Button:
@@ -245,49 +237,14 @@
                             Button:
                                 text: 'HIPAA Audit'
                                 on_release: _screen_manager.current = 'HIPAA_Audit'
-                
-                Screen:
-                    name: 'Import_KML'
-                    BoxLayout:
-                        id: 'defaultLayout'
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout: 
-                            id: 'importKMLPanelLayout'
-                            orientation: 'horizontal'
-                            size_hint: 1, .8
-                            TextInput:
-                                size_hint: 1, .85
-                                multiline: True
-                                background_color: [0,0,0,1]
-                                foreground_color: [1,1,1,1]
-                                focus: False
-                                hint_text: 'This is where the KML import will happen'
-                Screen:
-                    name: 'Export_KML'
-                    BoxLayout:
-                        id: 'defaultLayout'
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout: 
-                            id: 'exportKMLPanelLayout'
-                            orientation: 'horizontal'
-                            size_hint: 1, .8
-                            TextInput:
-                                size_hint: 1, .85
-                                multiline: True
-                                background_color: [0,0,0,1]
-                                foreground_color: [1,1,1,1]
-                                focus: False
-                                hint_text: 'Export KML files here'
                 Screen:
                     name: 'Campaigns'
                     BoxLayout:
-                        id: 'defaultLayout'
+                        id: default_layout
                         orientation: 'vertical'
                         spacing: 2
                         BoxLayout: 
-                            id: 'campaignsPanelLayout'
+                            id: campaigns_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
                             TextInput:
@@ -299,7 +256,7 @@
                                 hint_text: 'Manage campaigns here'
         BoxLayout:
             size_hint: 1, .1
-            id: 'toolPanelLayout'
+            id: tool_panel_layout
             orientation: 'horizontal'
             Button:
                 background_normal: 'data/images/nav/camera.png'
