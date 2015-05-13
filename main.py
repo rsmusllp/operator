@@ -2,14 +2,16 @@
 
 import logging
 
-from ssoper.widgets.map import Map
-from ssoper.widgets.toplevel import TopLevel
+from ssoper.widgets.map import MapWidget
+from ssoper.widgets.root import RootWidget
 
 from kivy.app import App
 
 class MainApp(App):
 	def build(self):
-		return TopLevel()
+		self.root = RootWidget()
+		self.map = self.root.ids.map_widget
+		return self.root
 
 	def on_pause(self):
 		return True

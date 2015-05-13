@@ -7,9 +7,18 @@
 
 import logging
 
+from ssoper.modules import camera
+from ssoper.modules import soundboard
+
 from kivy.uix.boxlayout import BoxLayout
 
-class TopLevel(BoxLayout):
+class RootWidget(BoxLayout):
 	def __init__(self, *args, **kwargs):
 		self.logger = logging.getLogger("kivy.operator.{0}".format(self.__class__.__name__))
-		super(TopLevel, self).__init__(*args, **kwargs)
+		super(RootWidget, self).__init__(*args, **kwargs)
+
+	def do_play_sound(self, sound_file):
+		soundboard.play_sound(sound_file)
+
+	def do_take_picture(self):
+		camera.take_picture()

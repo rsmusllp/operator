@@ -1,9 +1,22 @@
-<Map>:
-    id: 'googleMapWidget'
+<Toolbar@BoxLayout>:
+    size_hint_y: None
+    height: '48dp'
+    padding: '4dp'
+    spacing: '4dp'
 
-<TopLevel>:
+    canvas.before:
+        Color:
+            rgba: .2, .2, .2, .6
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<MapWidget>:
+    id: 'map_widget'
+
+<RootWidget>:
     BoxLayout:
-        id: 'rootLayout'
+        id: 'root_widget'
         orientation: 'vertical'
         BoxLayout:
             id: 'statusPanelLayout'
@@ -23,11 +36,13 @@
                 id: _screen_manager
                 Screen:
                     name: 'Home'
-                    BoxLayout:
+                    FloatLayout:
                         id: 'mapPanelLayout'
-                        orientation: 'horizontal'
-                        Map:
-                            id: 'googleMapWidget'
+                        MapWidget:
+                            id: map_widget
+                        Toolbar:
+                            Button:
+                                text: 'Current Location'
                 Screen:
                     name: 'Menu'
                     BoxLayout:

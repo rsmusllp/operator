@@ -7,7 +7,7 @@
 
 from kivy.core.audio import SoundLoader
 
-def do_play_sound(sound_file):
+def play_sound(sound_file):
 	sl = SoundLoader()
-	sl.load(sound_file)
-	sl.play()
+	sound = sl.load(sound_file)
+	sound.play()

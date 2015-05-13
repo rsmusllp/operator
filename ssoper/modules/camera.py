@@ -18,5 +18,3 @@ def take_picture():
 	picture_name = time.strftime('%Y-%m-%d-%H-%M-%S') + '.jpg'
 	picture_output = '/storage/sdcard0/' + picture_name
 	camera.take_picture(picture_output, os.path.exists(picture_output))
-
-
