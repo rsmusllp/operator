@@ -1,13 +1,11 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# SecureState Operator
+# https://github.com/securestate/operator
+#
+# THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
 from kivy.core.audio import SoundLoader
-
-class SoundBoard(SoundLoader):
-
-	def do_play_sound(self, sound_file):
-		# load a sound and play it
-		sound = self.load(sound_file)
-		sound.play()
 
 def do_play_sound(sound_file):
 	sl = SoundLoader()
