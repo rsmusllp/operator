@@ -42,7 +42,8 @@
                             id: map_widget
                         Toolbar:
                             Button:
-                                text: 'Current Location'
+                                text: 'Go To Current Location'
+                                on_release: app.map.do_move_to_current_location()
                 Screen:
                     name: 'Menu'
                     BoxLayout:

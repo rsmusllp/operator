@@ -7,6 +7,7 @@
 
 import time
 
+from android.runnable import run_on_ui_thread
 import gmaps
 from kivy.properties import NumericProperty
 from plyer import gps
@@ -16,7 +17,7 @@ MAX_LOCATION_REFRESH_FREQUENCY = 30 # seconds
 class MapWidget(gmaps.GMap):
 	latitude = NumericProperty()
 	longitude = NumericProperty()
-
+	zoom_level = 15
 	def __init__(self, *args, **kwargs):
 		super(MapWidget, self).__init__(*args, **kwargs)
 		self.bind(on_ready=self.on_map_widget_ready)
@@ -25,7 +26,7 @@ class MapWidget(gmaps.GMap):
 
 	def create_marker(self, **kwargs):
 		kwargs['position'] = self.create_latlng(kwargs['position'][0], kwargs['position'][1])
-		self.map.moveCamera(self.camera_update_factory.newLatLngZoom(kwargs['position'], 15))
+		self.map.moveCamera(self.camera_update_factory.newLatLngZoom(kwargs['position'], self.zoom_level))
 		marker_opts = super(MapWidget, self).create_marker(**kwargs)
 		return self.map.addMarker(marker_opts)
 
@@ -34,6 +35,13 @@ class MapWidget(gmaps.GMap):
 		self.map.getUiSettings().setZoomControlsEnabled(False)
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
+
+	@run_on_ui_thread
+	def do_move_to_current_location(self):
+		if not self._last_known_location_update:
+			return
+		position = self.create_latlng(self.latitude, self.longitude)
+		self.map.moveCamera(self.camera_update_factory.newLatLngZoom(position, self.zoom_level))
 
 	def on_gps_location(self, **kwargs):
 		if not ('lat' in kwargs and 'lon' in kwargs):
