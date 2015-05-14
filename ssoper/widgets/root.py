@@ -14,7 +14,7 @@ from kivy.uix.boxlayout import BoxLayout
 
 class RootWidget(BoxLayout):
 	def __init__(self, *args, **kwargs):
-		self.logger = logging.getLogger("kivy.operator.{0}".format(self.__class__.__name__))
+		self.logger = logging.getLogger("kivy.operator.widgets.root")
 		super(RootWidget, self).__init__(*args, **kwargs)
 
 	def do_play_sound(self, sound_file):
