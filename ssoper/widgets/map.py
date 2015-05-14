@@ -34,25 +34,28 @@ class MapWidget(gmaps.GMap):
 		self.bind(on_map_click=self.on_map_widget_click, on_ready=self.on_map_widget_ready)
 		self._last_known_location_marker = None
 		self._last_known_location_update = 0
+		self.user_markers = []
 
 	def create_marker(self, **kwargs):
 		if isinstance(kwargs.get('icon'), (float, int)):
 			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(kwargs['icon'])
 		if isinstance(kwargs['position'], tuple):
 			kwargs['position'] = self.create_latlng(kwargs['position'][0], kwargs['position'][1])
-		self.map.moveCamera(self.camera_update_factory.newLatLngZoom(kwargs['position'], self.zoom_level))
+		if kwargs.pop('move_camera', False):
+			self.map.moveCamera(self.camera_update_factory.newLatLngZoom(kwargs['position'], self.zoom_level))
 		marker_opts = super(MapWidget, self).create_marker(**kwargs)
 		return self.map.addMarker(marker_opts)
 
 	def on_map_widget_click(self, map_widget, latlng):
 		now = datetime.datetime.now()
-		self.create_marker(
+		marker = self.create_marker(
 			draggable=False,
 			icon=BitmapDescriptorFactory.HUE_VIOLET,
 			position=latlng,
 			snippet=now.strftime("Set at %x %X"),
-			title='Custom Point'
+			title="Marker #{0}".format(len(self.user_markers) + 1)
 		)
+		self.user_markers.append(marker)
 
 	def on_map_widget_ready(self, *args, **kwargs):
 		#self.create_marker(title='SecureState', snippet='The mother ship', position=(41.4237737, -81.5143923))
@@ -90,6 +93,7 @@ class MapWidget(gmaps.GMap):
 		self._last_known_location_marker = self.create_marker(
 			draggable=False,
 			icon=BitmapDescriptorFactory.HUE_AZURE,
+			move_camera=True,
 			position=(kwargs['lat'], kwargs['lon']),
 			title='Current Location'
 		)
