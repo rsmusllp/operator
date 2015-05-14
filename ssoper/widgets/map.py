@@ -5,12 +5,17 @@
 #
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
+import datetime
 import time
 
 from android.runnable import run_on_ui_thread
 import gmaps
+from jnius import autoclass
 from kivy.properties import NumericProperty
 from plyer import gps
+
+# used for marker icon colors: https://developer.android.com/reference/com/google/android/gms/maps/model/BitmapDescriptorFactory.html
+BitmapDescriptorFactory = autoclass('com.google.android.gms.maps.model.BitmapDescriptorFactory')
 
 MAX_LOCATION_REFRESH_FREQUENCY = 30 # seconds
 # map type constants: https://developer.android.com/reference/com/google/android/gms/maps/GoogleMap.html
@@ -26,15 +31,28 @@ class MapWidget(gmaps.GMap):
 	zoom_level = 20
 	def __init__(self, *args, **kwargs):
 		super(MapWidget, self).__init__(*args, **kwargs)
-		self.bind(on_ready=self.on_map_widget_ready)
+		self.bind(on_map_click=self.on_map_widget_click, on_ready=self.on_map_widget_ready)
 		self._last_known_location_marker = None
 		self._last_known_location_update = 0
 
 	def create_marker(self, **kwargs):
-		kwargs['position'] = self.create_latlng(kwargs['position'][0], kwargs['position'][1])
+		if isinstance(kwargs.get('icon'), (float, int)):
+			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(kwargs['icon'])
+		if isinstance(kwargs['position'], tuple):
+			kwargs['position'] = self.create_latlng(kwargs['position'][0], kwargs['position'][1])
 		self.map.moveCamera(self.camera_update_factory.newLatLngZoom(kwargs['position'], self.zoom_level))
 		marker_opts = super(MapWidget, self).create_marker(**kwargs)
 		return self.map.addMarker(marker_opts)
+
+	def on_map_widget_click(self, map_widget, latlng):
+		now = datetime.datetime.now()
+		self.create_marker(
+			draggable=False,
+			icon=BitmapDescriptorFactory.HUE_VIOLET,
+			position=latlng,
+			snippet=now.strftime("Set at %x %X"),
+			title='Custom Point'
+		)
 
 	def on_map_widget_ready(self, *args, **kwargs):
 		#self.create_marker(title='SecureState', snippet='The mother ship', position=(41.4237737, -81.5143923))
@@ -69,6 +87,11 @@ class MapWidget(gmaps.GMap):
 		self._last_known_location_update = current_time
 		if self._last_known_location_marker:
 			self._last_known_location_marker.remove()
-		self._last_known_location_marker = self.create_marker(draggable=False, title='Current Location', position=(kwargs['lat'], kwargs['lon']))
+		self._last_known_location_marker = self.create_marker(
+			draggable=False,
+			icon=BitmapDescriptorFactory.HUE_AZURE,
+			position=(kwargs['lat'], kwargs['lon']),
+			title='Current Location'
+		)
 		self.latitude = kwargs['lat']
 		self.longitude = kwargs['lon']
