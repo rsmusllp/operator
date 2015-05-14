@@ -87,15 +87,17 @@ class MapWidget(gmaps.GMap):
 		current_time = time.time()
 		if current_time - self._last_known_location_update < MAX_LOCATION_REFRESH_FREQUENCY:
 			return
-		self._last_known_location_update = current_time
 		if self._last_known_location_marker:
 			self._last_known_location_marker.remove()
 		self._last_known_location_marker = self.create_marker(
 			draggable=False,
 			icon=BitmapDescriptorFactory.HUE_AZURE,
-			move_camera=True,
 			position=(kwargs['lat'], kwargs['lon']),
 			title='Current Location'
 		)
+		first_location_update = self._last_known_location_update == 0
+		self._last_known_location_update = current_time
 		self.latitude = kwargs['lat']
 		self.longitude = kwargs['lon']
+		if first_location_update:
+			self.do_move_to_current_location()
