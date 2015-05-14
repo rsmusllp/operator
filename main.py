@@ -2,12 +2,18 @@
 
 import logging
 
-from ssoper.widgets.map import MapWidget
 from ssoper.widgets.root import RootWidget
 
 from kivy.app import App
+from kivy.factory import Factory
+
+Factory.register('MapWidget', module='ssoper.widgets.map')
 
 class MainApp(App):
+	def __init__(self, *args, **kwargs):
+		super(MainApp, self).__init__(*args, **kwargs)
+		self.map = None
+
 	def build(self):
 		self.root = RootWidget()
 		self.map = self.root.ids.map_panel_widget.ids.map_widget
