@@ -1,4 +1,4 @@
-<Toolbar@BoxLayout>:
+<MapToolbarWidget@BoxLayout>:
     size_hint_y: None
     height: '48dp'
     padding: '4dp'
@@ -11,8 +11,18 @@
             pos: self.pos
             size: self.size
 
-<MapWidget>:
-    id: map_widget
+<MapPanelWidget@FloatLayout>:
+    id: map_panel_layout
+    MapWidget:
+        id: map_widget
+    MapToolbarWidget:
+        Button:
+            text: 'Go To Current Location'
+            on_release: app.map.do_move_to_current_location()
+        Button:
+            size_hint: (.3, 1)
+            text: 'Type'
+            on_release: app.map.do_cycle_map_type()
 
 <RootWidget>:
     BoxLayout:
@@ -36,14 +46,8 @@
                 id: _screen_manager
                 Screen:
                     name: 'Home'
-                    FloatLayout:
-                        id: map_panel_layout
-                        MapWidget:
-                            id: map_widget
-                        Toolbar:
-                            Button:
-                                text: 'Go To Current Location'
-                                on_release: app.map.do_move_to_current_location()
+                    MapPanelWidget:
+                        id: map_panel_widget
                 Screen:
                     name: 'Menu'
                     BoxLayout:

@@ -58,3 +58,6 @@ target/
 
 # buildozer
 .buildozer/*
+
+# gmaps lib
+gmaps/*

@@ -13,11 +13,17 @@ from kivy.properties import NumericProperty
 from plyer import gps
 
 MAX_LOCATION_REFRESH_FREQUENCY = 30 # seconds
+# map type constants: https://developer.android.com/reference/com/google/android/gms/maps/GoogleMap.html
+MAP_TYPE_HYBRID = 4  # satellite maps with a transparent layer of major streets
+MAP_TYPE_NONE = 0  # no base map tiles
+MAP_TYPE_NORMAL = 1  # basic maps
+MAP_TYPE_SATELLITE = 2  # satellite maps with no labels
+MAP_TYPE_TERRAIN = 3  # terrain maps
 
 class MapWidget(gmaps.GMap):
 	latitude = NumericProperty()
 	longitude = NumericProperty()
-	zoom_level = 15
+	zoom_level = 20
 	def __init__(self, *args, **kwargs):
 		super(MapWidget, self).__init__(*args, **kwargs)
 		self.bind(on_ready=self.on_map_widget_ready)
@@ -33,8 +39,19 @@ class MapWidget(gmaps.GMap):
 	def on_map_widget_ready(self, *args, **kwargs):
 		#self.create_marker(title='SecureState', snippet='The mother ship', position=(41.4237737, -81.5143923))
 		self.map.getUiSettings().setZoomControlsEnabled(False)
+		self.map.setMapType(MAP_TYPE_HYBRID)
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
+
+	@run_on_ui_thread
+	def do_cycle_map_type(self):
+		map_type = self.map.getMapType()
+		# 4 is the highest map type constant
+		if map_type == 4:
+			# skip map type none
+			map_type = MAP_TYPE_NONE
+		map_type += 1
+		self.map.setMapType(map_type)
 
 	@run_on_ui_thread
 	def do_move_to_current_location(self):
