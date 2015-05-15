@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import sys
+import threading
 import time
 
 from android.runnable import run_on_ui_thread
@@ -45,7 +46,6 @@ class MapWidget(gmaps.GMap):
 		self.user_markers = []
 		self.logger = logging.getLogger("kivy.operator.widgets.map")
 
-	@run_on_ui_thread
 	def create_marker(self, **kwargs):
 		icon_color = kwargs.pop('icon_color', None)
 		if isinstance(icon_color, (float, int)):
@@ -59,7 +59,16 @@ class MapWidget(gmaps.GMap):
 		if kwargs.pop('move_camera', False):
 			self.move_camera(kwargs['position'])
 		marker_opts = super(MapWidget, self).create_marker(**kwargs)
-		return self.map.addMarker(marker_opts)
+
+		results = []
+		completed = threading.Event()
+		def _wrapped():
+			results.append(self.map.addMarker(marker_opts))
+			completed.set()
+		wrapped = run_on_ui_thread(_wrapped)
+		wrapped()
+		completed.wait()
+		return results.pop()
 
 	@run_on_ui_thread
 	def move_camera(self, position):
