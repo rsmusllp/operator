@@ -38,12 +38,14 @@ class MapWidget(gmaps.GMap):
 	zoom_level = 20
 	def __init__(self, *args, **kwargs):
 		super(MapWidget, self).__init__(*args, **kwargs)
+		self.is_ready = False
 		self.bind(on_map_click=self.on_map_widget_click, on_ready=self.on_map_widget_ready)
 		self._last_known_location_marker = None
 		self._last_known_location_update = 0
 		self.user_markers = []
 		self.logger = logging.getLogger("kivy.operator.widgets.map")
 
+	@run_on_ui_thread
 	def create_marker(self, **kwargs):
 		icon_color = kwargs.pop('icon_color', None)
 		if isinstance(icon_color, (float, int)):
@@ -55,9 +57,13 @@ class MapWidget(gmaps.GMap):
 			kwargs['position'] = self.create_latlng(kwargs['position'][0], kwargs['position'][1])
 
 		if kwargs.pop('move_camera', False):
-			self.map.moveCamera(self.camera_update_factory.newLatLngZoom(kwargs['position'], self.zoom_level))
+			self.move_camera(kwargs['position'])
 		marker_opts = super(MapWidget, self).create_marker(**kwargs)
 		return self.map.addMarker(marker_opts)
+
+	@run_on_ui_thread
+	def move_camera(self, position):
+		self.map.moveCamera(self.camera_update_factory.newLatLngZoom(position, self.zoom_level))
 
 	def on_map_widget_click(self, map_widget, latlng):
 		now = datetime.datetime.now()
@@ -72,6 +78,7 @@ class MapWidget(gmaps.GMap):
 
 	def on_map_widget_ready(self, *args, **kwargs):
 		#self.create_marker(title='SecureState', snippet='The mother ship', position=(41.4237737, -81.5143923))
+		self.is_ready = True
 		self.map.getUiSettings().setZoomControlsEnabled(False)
 		self.map.setMapType(MAP_TYPE_HYBRID)
 		gps.configure(on_location=self.on_gps_location)
@@ -105,12 +112,10 @@ class MapWidget(gmaps.GMap):
 		map_type += 1
 		self.map.setMapType(map_type)
 
-	@run_on_ui_thread
 	def do_move_to_current_location(self):
 		if not self._last_known_location_update:
 			return
-		position = self.create_latlng(self.latitude, self.longitude)
-		self.map.moveCamera(self.camera_update_factory.newLatLngZoom(position, self.zoom_level))
+		self.move_camera(self.create_latlng(self.latitude, self.longitude))
 
 	def on_gps_location(self, **kwargs):
 		if not ('lat' in kwargs and 'lon' in kwargs):
