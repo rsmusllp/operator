@@ -35,12 +35,15 @@
             Button:
                 background_normal: 'data/images/status/good.jpg'
                 background_down: 'data/images/status/good_pressed.jpg'
+                on_release: app.xmpp_client.update_mood('happy')
             Button:
                 background_normal: 'data/images/status/neutral.jpg'
                 background_down: 'data/images/status/neutral_pressed.jpg'
+                on_release: app.xmpp_client.update_mood('calm')
             Button:
                 background_normal: 'data/images/status/bad.jpg'
                 background_down: 'data/images/status/bad_pressed.jpg'
+                on_release: app.xmpp_client.update_mood('angry')
         BoxLayout
             ScreenManager:
                 id: _screen_manager
@@ -93,7 +96,7 @@
                         id: default_layout
                         orientation: 'vertical'
                         spacing: 2
-                        BoxLayout: 
+                        BoxLayout:
                             id: notes_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
@@ -109,7 +112,7 @@
                         id: default_layout
                         orientation: 'vertical'
                         spacing: 2
-                        BoxLayout: 
+                        BoxLayout:
                             id: message_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
@@ -126,7 +129,7 @@
                         id: default_layout
                         orientation: 'vertical'
                         spacing: 2
-                        BoxLayout: 
+                        BoxLayout:
                             id: recorder_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
@@ -143,7 +146,7 @@
                         id: default_layout
                         orientation: 'vertical'
                         spacing: 2
-                        GridLayout: 
+                        GridLayout:
                             id: soundboard_panel_layout
                             rows: 3
                             cols: 3
@@ -172,7 +175,7 @@
                         id: default_layout
                         orientation: 'vertical'
                         spacing: 2
-                        BoxLayout: 
+                        BoxLayout:
                             id: checklist_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
@@ -191,7 +194,7 @@
                         id: default_layout
                         orientation: 'vertical'
                         spacing: 2
-                        BoxLayout: 
+                        BoxLayout:
                             id: physical_checklist_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
@@ -210,7 +213,7 @@
                         id: default_layout
                         orientation: 'vertical'
                         spacing: 2
-                        BoxLayout: 
+                        BoxLayout:
                             id: pci_checklist_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
@@ -229,7 +232,7 @@
                         id: default_layout
                         orientation: 'vertical'
                         spacing: 2
-                        BoxLayout: 
+                        BoxLayout:
                             id: hipaa_checklist_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
@@ -248,7 +251,7 @@
                         id: default_layout
                         orientation: 'vertical'
                         spacing: 2
-                        BoxLayout: 
+                        BoxLayout:
                             id: campaigns_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
