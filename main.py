@@ -29,7 +29,7 @@ class MainApp(App):
 		self.logger = logging.getLogger('kivy.operator.app')
 		self.map = None
 		self.xmpp_client = OperatorXMPPClient(XMPP_SERVER, XMPP_USERNAME, XMPP_PASSWORD)
-		self.user_locations = {}
+		self.user_location_markers = {}
 		self._last_location_update = 0
 
 	def build(self):
@@ -72,15 +72,17 @@ class MainApp(App):
 			self.logger.warning('map is not ready for user marker')
 			return
 		user = info['user']
-		if user in self.user_locations:
-			self.user_locations[user].remove()
+		if user in self.user_location_markers:
+			self.user_location_markers[user].remove()
+		user_mood = self.xmpp_client.user_moods.get(user, 'calm')
+		icon_color = {'angry': 'red', 'calm': 'yellow', 'happy': 'green'}.get(user_mood)
 		marker = self.map.create_marker(
 			draggable=False,
 			title=info['user'],
 			position=info['location'],
-			icon_color='yellow'
+			icon_color=icon_color
 		)
-		self.user_locations[user] = marker
+		self.user_location_markers[user] = marker
 
 if __name__ == '__main__':
 	logging.captureWarnings(True)
