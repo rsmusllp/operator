@@ -75,7 +75,7 @@ class MainApp(App):
 		if user in self.user_location_markers:
 			self.user_location_markers[user].remove()
 		user_mood = self.xmpp_client.user_moods.get(user, 'calm')
-		icon_color = {'angry': 'red', 'calm': 'yellow', 'happy': 'green'}.get(user_mood)
+		icon_color = {'angry': 'red', 'calm': 'yellow', 'happy': 'green'}.get(user_mood, 'yellow')
 		marker = self.map.create_marker(
 			draggable=False,
 			title=info['user'],
