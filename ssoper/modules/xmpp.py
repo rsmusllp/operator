@@ -7,6 +7,7 @@
 
 import logging
 
+import android.runnable
 import kivy.event
 import sleekxmpp
 
@@ -38,12 +39,27 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 
 		self.jid = "{0}/operator".format(username)
 		self._raw_client = RawXMPPClient(self.jid, password)
-		self._raw_client.add_event_handler('user_location_publish', self._on_xmpp_user_location_publish)
+		self._raw_client.add_event_handler('user_location_publish', self.on_xmpp_user_location_publish)
 		if self._raw_client.connect(server):
 			self.logger.info("connected to xmpp server {0} {1}:{2}".format(self.jid, server[0], server[1]))
 		self._raw_client.process()
 
-	def _on_xmpp_user_location_publish(self, xmpp_msg):
+	def update_location(self, position, altitude=None, bearing=None, speed=None):
+		self.logger.info('xmpp received gps location update')
+		kwargs = {
+			'lat': position[0],
+			'lon': position[1]
+		}
+		if altitude:
+			kwargs['alt'] = altitude
+		if bearing:
+			kwargs['bearing'] = bearing
+		if speed:
+			kwargs['speed'] = speed
+		self._raw_client['xep_0080'].publish_location(**kwargs)
+
+	@android.runnable.run_on_ui_thread
+	def on_xmpp_user_location_publish(self, xmpp_msg):
 		geo = xmpp_msg['pubsub_event']['items']['item']['geoloc']
 		if not ('lat' in geo.values and 'lon' in geo.values):
 			self.logger.warning('received user location without lat/lon info')

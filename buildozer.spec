@@ -27,7 +27,7 @@ version = 0.0.1
 
 # (list) Application requirements
 # comma seperated e.g. requirements = sqlite3,kivy
-requirements = kivy,plyer,sleekxmpp,dnspython,openssl,pyopenssl
+requirements = kivy,plyer,sleekxmpp,openssl
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

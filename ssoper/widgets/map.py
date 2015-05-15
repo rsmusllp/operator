@@ -11,13 +11,11 @@ import logging
 import os
 import sys
 import threading
-import time
 
 from android.runnable import run_on_ui_thread
 import gmaps
 from jnius import autoclass
 from kivy.properties import NumericProperty
-from plyer import gps
 
 if sys.version_info >= (3, 0):
 	unicode = str
@@ -25,7 +23,6 @@ if sys.version_info >= (3, 0):
 # used for marker icon colors: https://developer.android.com/reference/com/google/android/gms/maps/model/BitmapDescriptorFactory.html
 BitmapDescriptorFactory = autoclass('com.google.android.gms.maps.model.BitmapDescriptorFactory')
 
-MAX_LOCATION_REFRESH_FREQUENCY = 30 # seconds
 # map type constants: https://developer.android.com/reference/com/google/android/gms/maps/GoogleMap.html
 MAP_TYPE_HYBRID = 4  # satellite maps with a transparent layer of major streets
 MAP_TYPE_NONE = 0  # no base map tiles
@@ -42,7 +39,6 @@ class MapWidget(gmaps.GMap):
 		self.is_ready = False
 		self.bind(on_map_click=self.on_map_widget_click, on_ready=self.on_map_widget_ready)
 		self._last_known_location_marker = None
-		self._last_known_location_update = 0
 		self.user_markers = []
 		self.logger = logging.getLogger("kivy.operator.widgets.map")
 
@@ -90,8 +86,6 @@ class MapWidget(gmaps.GMap):
 		self.is_ready = True
 		self.map.getUiSettings().setZoomControlsEnabled(False)
 		self.map.setMapType(MAP_TYPE_HYBRID)
-		gps.configure(on_location=self.on_gps_location)
-		gps.start()
 		if os.access('/storage/sdcard0/map_markers.json', os.R_OK):
 			self.import_marker_file('/storage/sdcard0/map_markers.json')
 
@@ -122,27 +116,24 @@ class MapWidget(gmaps.GMap):
 		self.map.setMapType(map_type)
 
 	def do_move_to_current_location(self):
-		if not self._last_known_location_update:
+		if not self._last_known_location_marker:
 			return
 		self.move_camera(self.create_latlng(self.latitude, self.longitude))
 
-	def on_gps_location(self, **kwargs):
-		if not ('lat' in kwargs and 'lon' in kwargs):
-			return
-		current_time = time.time()
-		if current_time - self._last_known_location_update < MAX_LOCATION_REFRESH_FREQUENCY:
-			return
+	def update_location(self, position, altitude=None, bearing=None, speed=None):
+		self.logger.info('map received gps location update')
+		first_location_update = False
 		if self._last_known_location_marker:
 			self._last_known_location_marker.remove()
+		else:
+			first_location_update = True
 		self._last_known_location_marker = self.create_marker(
 			draggable=False,
 			icon_color='azure',
-			position=(kwargs['lat'], kwargs['lon']),
+			position=position,
 			title='Current Location'
 		)
-		first_location_update = self._last_known_location_update == 0
-		self._last_known_location_update = current_time
-		self.latitude = kwargs['lat']
-		self.longitude = kwargs['lon']
+		self.latitude = position[0]
+		self.longitude = position[1]
 		if first_location_update:
 			self.do_move_to_current_location()
