@@ -13,7 +13,7 @@ from plyer import camera
 
 @mainthread
 def take_picture():
-	# take a picture and save it
+	"""Take a picture with the built in camera and save it to disk."""
 	if platform != 'android':
 		return
 	picture_name = time.strftime('%Y-%m-%d-%H-%M-%S') + '.jpg'

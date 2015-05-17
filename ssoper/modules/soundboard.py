@@ -8,6 +8,11 @@
 from kivy.core.audio import SoundLoader
 
 def play_sound(sound_file):
+	"""
+	Play a WAV sound file.
+
+	:param str sound_file: The path to the WAV file to play.
+	"""
 	sl = SoundLoader()
 	sound = sl.load(sound_file)
 	sound.play()

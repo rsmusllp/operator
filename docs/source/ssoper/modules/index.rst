@@ -5,4 +5,6 @@ The ssoper.modules Package
    :maxdepth: 3
    :titlesonly:
 
+   camera.rst
+   soundboard.rst
    xmpp.rst

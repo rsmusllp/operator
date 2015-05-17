@@ -1,7 +1,7 @@
-:mod:`widgets.xmpp`
+:mod:`modules.xmpp`
 ===================
 
-.. module:: widgets.xmpp
+.. module:: modules.xmpp
    :synopsis:
 
 Classes

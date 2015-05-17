@@ -24,11 +24,20 @@ if sys.version_info >= (3, 0):
 BitmapDescriptorFactory = autoclass('com.google.android.gms.maps.model.BitmapDescriptorFactory')
 
 # map type constants: https://developer.android.com/reference/com/google/android/gms/maps/GoogleMap.html
-MAP_TYPE_HYBRID = 4  # satellite maps with a transparent layer of major streets
-MAP_TYPE_NONE = 0  # no base map tiles
-MAP_TYPE_NORMAL = 1  # basic maps
-MAP_TYPE_SATELLITE = 2  # satellite maps with no labels
-MAP_TYPE_TERRAIN = 3  # terrain maps
+MAP_TYPE_HYBRID = 4
+"""Satellite maps with a transparent layer of major streets"""
+
+MAP_TYPE_NONE = 0
+"""No base map tiles"""
+
+MAP_TYPE_NORMAL = 1
+"""Basic maps"""
+
+MAP_TYPE_SATELLITE = 2
+"""Satellite maps with no labels"""
+
+MAP_TYPE_TERRAIN = 3
+"""Terrain maps"""
 
 class MapWidget(gmaps.GMap):
 	"""
@@ -37,16 +46,31 @@ class MapWidget(gmaps.GMap):
 	"""
 	latitude = NumericProperty()
 	longitude = NumericProperty()
-	zoom_level = 20
+	zoom_level = 18
+	"""The default level to use for the camera zoom."""
 	def __init__(self, *args, **kwargs):
 		super(MapWidget, self).__init__(*args, **kwargs)
 		self.is_ready = False
+		"""Whether the map is ready for drawing or not yet."""
 		self.bind(on_map_click=self.on_map_widget_click, on_ready=self.on_map_widget_ready)
 		self._last_known_location_marker = None
 		self.user_markers = []
 		self.logger = logging.getLogger("kivy.operator.widgets.map")
 
 	def create_marker(self, **kwargs):
+		"""
+		Create a custom marker to be displayed on the map. All arguments must be
+		specified as key word arguments.
+
+		:param bool draggable: Whether the marker can be moved or not by dragging it.
+		:param icon_color: The color to use for the icon. Specified as a name or position on a color wheel.
+		:type icon_color: float, int, str
+		:param bool move_camera: Move the camera to focus on the position of the new marker.
+		:param tuple position: The GPS coordinates of where to place the marker as a latitude and longitude pair.
+		:param str snippet: A snippet of text to display when the marker is selected.
+		:param str title: The title for the new marker:
+		:return: The new marker instance.
+		"""
 		icon_color = kwargs.pop('icon_color', None)
 		if isinstance(icon_color, (float, int)):
 			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(icon_color)
@@ -72,6 +96,11 @@ class MapWidget(gmaps.GMap):
 
 	@run_on_ui_thread
 	def move_camera(self, position):
+		"""
+		Move the camera to focus on a specified position.
+
+		:param position: The position to focus the camera.
+		"""
 		self.map.moveCamera(self.camera_update_factory.newLatLngZoom(position, self.zoom_level))
 
 	def on_map_widget_click(self, map_widget, latlng):

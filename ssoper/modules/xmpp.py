@@ -57,7 +57,9 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 			self.logger.info("connected to xmpp server {0} {1}:{2}".format(self.jid, server[0], server[1]))
 		self._raw_client.process()
 		self.user_locations = {}
+		"""A dictionary mapping user JIDs to their last published location."""
 		self.user_moods = {}
+		"""A dictionary mapping user JIDs to their last published mood."""
 
 	def update_location(self, position, altitude=None, bearing=None, speed=None):
 		"""
