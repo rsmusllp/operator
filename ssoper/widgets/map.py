@@ -31,6 +31,10 @@ MAP_TYPE_SATELLITE = 2  # satellite maps with no labels
 MAP_TYPE_TERRAIN = 3  # terrain maps
 
 class MapWidget(gmaps.GMap):
+	"""
+	A Google Maps widget which is used to display geographical information
+	including the current users position and custom markers.
+	"""
 	latitude = NumericProperty()
 	longitude = NumericProperty()
 	zoom_level = 20
@@ -90,6 +94,10 @@ class MapWidget(gmaps.GMap):
 			self.import_marker_file('/storage/sdcard0/map_markers.json')
 
 	def import_marker_file(self, filename):
+		"""
+		Import a JSON file describing custom markers that are to be added to the
+		map.
+		"""
 		self.logger.info('loading marker file: ' + filename)
 		with open(filename, 'r') as file_h:
 			data = json.load(file_h)
@@ -121,6 +129,14 @@ class MapWidget(gmaps.GMap):
 		self.move_camera(self.create_latlng(self.latitude, self.longitude))
 
 	def update_location(self, position, altitude=None, bearing=None, speed=None):
+		"""
+		Update the map marker indicating the current users location.
+
+		:param tuple position: A tuple of the latitude and longitude.
+		:param float altitude: The current altitude.
+		:param int bearing: The current bearing in degrees East of true North.
+		:param int speed: The current speed in meters per second.
+		"""
 		self.logger.info('map received gps location update')
 		first_location_update = False
 		if self._last_known_location_marker:
