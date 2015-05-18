@@ -20,7 +20,7 @@ Messaging Integration
 
 Checklist View*
 
-Voice Recorder
+Voice Recorder*
 
 Soundboard*
 
