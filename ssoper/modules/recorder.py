@@ -9,7 +9,6 @@ import time
 
 from jnius import autoclass
 
-#Environment = autoclass('android.os.Environment')
 MediaRecorder = autoclass('android.media.MediaRecorder')
 AudioSource = autoclass('android.media.MediaRecorder$AudioSource')
 OutputFormat = autoclass('android.media.MediaRecorder$OutputFormat')
@@ -31,22 +30,6 @@ class SoundRecorder(object):
 	    self.recorder.setAudioEncoder(AudioEncoder.AMR_NB)
 	    self.recorder.setOutputFile(self.storage_path)
 	    self.recorder.prepare()
-
-
-	# def reset_player():
-	#     if (player.isPlaying()):
-	#         player.stop()
-	#     player.reset()
-
-
-	# def restart_player():
-	#     reset_player()
-	#     try:
-	#         player.setDataSource(storage_path)
-	#         player.prepare()
-	#         player.start()
-	#     except:
-	#         player.reset()
 
 	def start(self):
 	    if self.is_recording:
