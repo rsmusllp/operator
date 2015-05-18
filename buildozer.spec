@@ -172,6 +172,7 @@ ACCESS_NETWORK_STATE
 WRITE_EXTERNAL_STORAGE
 ACCESS_COARSE_LOCATION
 ACCESS_FINE_LOCATION
+android.permission.RECORD_AUDIO
 com.google.android.providers.gsf.permission.READ_GSERVICES
 com.google.android.providers.gsf.permission.WRITE_GSERVICES
 
