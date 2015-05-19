@@ -17,7 +17,6 @@ MediaPlayer = autoclass('android.media.MediaPlayer')
 File = autoclass('java.io.File')
 
 class SoundRecorder(object):
-
 	def __init__(self):
 		self.recorder = MediaRecorder()
 		self.player = MediaPlayer()
@@ -25,28 +24,26 @@ class SoundRecorder(object):
 		self.is_recording = False
 
 	def init_recorder(self):
-	    self.recorder.setAudioSource(AudioSource.MIC)
-	    self.recorder.setOutputFormat(OutputFormat.THREE_GPP)
-	    self.recorder.setAudioEncoder(AudioEncoder.AMR_NB)
-	    self.recorder.setOutputFile(self.storage_path)
-	    self.recorder.prepare()
+		self.recorder.setAudioSource(AudioSource.MIC)
+		self.recorder.setOutputFormat(OutputFormat.THREE_GPP)
+		self.recorder.setAudioEncoder(AudioEncoder.AMR_NB)
+		self.recorder.setOutputFile(self.storage_path)
+		self.recorder.prepare()
 
 	def start(self):
-	    if self.is_recording:
-	        self.recorder.stop()
-	        self.recorder.reset()
-	        self.is_recording = False
-	        return
-
-	    self.init_recorder()
-	    self.recorder.start()
-	    self.is_recording = True
-
-	def stop(self):
-		if not self.is_recording:
-			return
-		else:
+		if self.is_recording:
 			self.recorder.stop()
 			self.recorder.reset()
 			self.is_recording = False
 			return
+
+		self.init_recorder()
+		self.recorder.start()
+		self.is_recording = True
+
+	def stop(self):
+		if not self.is_recording:
+			return
+		self.recorder.stop()
+		self.recorder.reset()
+		self.is_recording = False
