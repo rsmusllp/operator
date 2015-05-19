@@ -133,13 +133,12 @@
                             id: recorder_panel_layout
                             orientation: 'horizontal'
                             size_hint: 1, .8
-                            TextInput:
-                                size_hint: 1, .85
-                                multiline: True
-                                background_color: [0,0,0,1]
-                                foreground_color: [1,1,1,1]
-                                focus: False
-                                hint_text: 'This is where the voice recorder will go'
+                            Button:
+                                text: 'Start Recorder'
+                                on_release: root.do_start_recording()
+                            Button:
+                                text: 'Stop Recording'
+                                on_release: root.do_stop_recording()
                 Screen:
                     name: 'Soundboard'
                     BoxLayout:
