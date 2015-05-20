@@ -6,5 +6,6 @@ The ssoper.modules Package
    :titlesonly:
 
    camera.rst
+   recorder.rst
    soundboard.rst
    xmpp.rst
