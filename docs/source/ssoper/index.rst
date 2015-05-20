@@ -8,3 +8,5 @@ The ssoper Package
    modules/index.rst
 
    widgets/index.rst
+
+   utilities/index.rst
