@@ -1,5 +1,5 @@
 The ssoper.utilities Package
-==========================
+============================
 
 .. toctree::
    :maxdepth: 3

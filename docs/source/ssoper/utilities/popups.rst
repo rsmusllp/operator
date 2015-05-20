@@ -1,5 +1,5 @@
 :mod:`utilities.popups`
-=========================
+=======================
 
 .. module:: utilities.popups
    :synopsis:
