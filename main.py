@@ -17,6 +17,8 @@ from kivy.factory import Factory
 from plyer import gps
 
 Factory.register('MapWidget', module='ssoper.widgets.map')
+Factory.register('ChecklistWidget', module='ssoper.widgets.checklist')
+Factory.register('FileWidget', module='ssoper.widgets.fileselect')
 
 GPS_MAX_UPDATE_FREQUENCY = 30
 XMPP_SERVER = ('98.103.103.163', 443)
