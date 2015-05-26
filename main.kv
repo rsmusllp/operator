@@ -24,6 +24,9 @@
             text: 'Type'
             on_release: app.map.do_cycle_map_type()
 
+<ChecklistWidget@ScrollView>:
+    id: checklist_layout
+    
 <RootWidget>:
     BoxLayout:
         id: root_widget
@@ -189,61 +192,16 @@
                                 on_release: _screen_manager.current = 'HIPAA_Audit'
                 Screen:
                     name: 'Physical_Assessment'
-                    BoxLayout:
-                        id: default_layout
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout:
-                            id: physical_checklist_panel_layout
-                            orientation: 'horizontal'
-                            size_hint: 1, .8
-                            Button:
-                                text: 'Physical Security Assessment'
-                                on_release: _screen_manager.current = 'Phsyical_Assessment'
-                            Button:
-                                text: 'PCI Audit'
-                                on_release: _screen_manager.current = 'PCI_Audit'
-                            Button:
-                                text: 'HIPAA Audit'
-                                on_release: _screen_manager.current = 'HIPAA_Audit'
+                    ChecklistWidget:
+                        id: physical_checklist_layout
                 Screen:
                     name: 'PCI_Audit'
-                    BoxLayout:
-                        id: default_layout
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout:
-                            id: pci_checklist_panel_layout
-                            orientation: 'horizontal'
-                            size_hint: 1, .8
-                            Button:
-                                text: 'Physical Security Assessment'
-                                on_release: _screen_manager.current = 'Phsyical_Assessment'
-                            Button:
-                                text: 'PCI Audit'
-                                on_release: _screen_manager.current = 'PCI_Audit'
-                            Button:
-                                text: 'HIPAA Audit'
-                                on_release: _screen_manager.current = 'HIPAA_Audit'
+                    ChecklistWidget:
+                        id: pci_audit
                 Screen:
                     name: 'HIPAA_Audit'
-                    BoxLayout:
-                        id: default_layout
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout:
-                            id: hipaa_checklist_panel_layout
-                            orientation: 'horizontal'
-                            size_hint: 1, .8
-                            Button:
-                                text: 'Physical Security Assessment'
-                                on_release: _screen_manager.current = 'Phsyical_Assessment'
-                            Button:
-                                text: 'PCI Audit'
-                                on_release: _screen_manager.current = 'PCI_Audit'
-                            Button:
-                                text: 'HIPAA Audit'
-                                on_release: _screen_manager.current = 'HIPAA_Audit'
+                    ChecklistWidget:
+                        id: hipaa_audit
                 Screen:
                     name: 'Campaigns'
                     BoxLayout:
