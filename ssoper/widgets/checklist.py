@@ -5,13 +5,13 @@
 #
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
-import re
-import time
+import functools
+import glob
 import json
 import os
-import glob
-
-from shutil import copyfile, rmtree
+import re
+import shutil
+import time
 
 from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
@@ -26,17 +26,16 @@ from kivy.uix.popup import Popup
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
 
-from fileselect import FileWidget
-from functools import partial
+from ssoper.widgets.fileselect import FileWidget
 
 
 class ChecklistWidget(ScrollView):
 	screen_manager = ObjectProperty(None)
 	def __init__(self, *args, **kwargs):
 		super(ChecklistWidget, self).__init__(*args, **kwargs)
-		Window.bind(on_keyboard=self.onBackBtn)
+		Window.bind(on_keyboard=self.on_back_btn)
 		self.checklist_layout = GridLayout(cols=1)
-		self.json_P = ""
+		self.json_p = ""
 		self.title = ""
 		self.submit_button = Button()
 		self.filewidget = FileWidget()
@@ -53,24 +52,24 @@ class ChecklistWidget(ScrollView):
 		self.do_get_checklists()
 
 	def do_get_checklists(self):
-        """
-        Creates the base screen for the checklist manager.
-        It includes previously loaded checklists as well as a button for new checklists.
-        """
+		"""
+		Creates the base screen for the checklist manager.
+		It includes previously loaded checklists as well as a button for new checklists.
+		"""
 		self.clear_widgets()
 		self.checklist_menu_layout.clear_widgets()
 		titles = []
 		new_json_button = Button(text="Load new checklist", size_hint_y=None)
 		new_json_button.bind(on_release=lambda x: self.do_popup_file_select())
 		self.checklist_menu_layout.add_widget(new_json_button)
-		for dirname, dirnames, filenames in os.walk('/sdcard/operator/checklists/'):
+		for dirname, dirnames, _ in os.walk('/sdcard/operator/checklists/'):
 			for subdirname in dirnames:
 				loc = os.path.join(dirname, subdirname)
 				name = loc.split("/")
 				titles.append(name[len(name)-1])
 		for title in titles:
 			button_to_checklist = Button(text=title, size_hint_y=None)
-			button_to_checklist.bind(on_release=partial(self.do_open_checklist, title))
+			button_to_checklist.bind(on_release=functools.partial(self.do_open_checklist, title))
 			self.checklist_menu_layout.add_widget(button_to_checklist)
 		self.add_widget(self.checklist_menu_layout)
 
@@ -94,9 +93,9 @@ class ChecklistWidget(ScrollView):
 		self.file_select_popup.open()
 
 	def do_add_checklist_location(self):
-        """
-        Creates the subdirectory for the checklist.
-        """
+		"""
+		Creates the subdirectory for the checklist.
+		"""
 		path = self.filewidget.true_path
 		if path is not None and '.json' in str(path):
 			with open(path) as p:
@@ -109,35 +108,35 @@ class ChecklistWidget(ScrollView):
 		if not os.path.exists(d):
 			os.makedirs(d)
 		open(d+"/"+title+"_template.json", 'a')
-		copyfile(str(path), d+"/"+title+"_template.json")
+		shutil.copyfile(str(path), d+"/"+title+"_template.json")
 		self.do_get_checklists()
 		self.file_select_popup.dismiss()
 
 	def do_open_checklist(self, title, event):
 		"""
-        Opens the checklist, depending on the request from the user in the base menu.
-        
-        :param: The title of the checklist, according to the title field in the .JSON file.
-        """
+		Opens the checklist, depending on the request from the user in the base menu.
+
+		:param: The title of the checklist, according to the title field in the .JSON file.
+		"""
 		self.clear_widgets()
-		self.json_P = self.get_recent_json(title)
+		self.json_p = self.get_recent_json(title)
 		self.title = title
 		self.gen_checklist()
 
 	def get_recent_json(self, title):
-        """
-        Load the most recent .JSON file in the subdirectory.
-        
-        :param: The title of the checklist, according to the title field in the .JSON file.
-        """
+		"""
+		Load the most recent .JSON file in the subdirectory.
+
+		:param: The title of the checklist, according to the title field in the .JSON file.
+		"""
 		newest = max(glob.iglob(os.path.join('/sdcard/operator/checklists/'+title, '*.[Jj][Ss][Oo][Nn]')), key=os.path.getctime)
 		return newest
 
-	def onBackBtn(self, window, key, *args):
-        """
-        Saves when back button is called.
-        """
-		if key == 27 and alive:
+	def on_back_btn(self, window, key, *args):
+		"""
+		Saves when back button is called.
+		"""
+		if key == 27:
 			self.submit_button.trigger_action(duration=0)
 
 	def gen_checklist(self):
@@ -147,7 +146,7 @@ class ChecklistWidget(ScrollView):
 		self.checklist_layout.size_hint_y = None
 		self.checklist_layout.id = 'checklist'
 		self.checklist_layout.bind(minimum_height=self.checklist_layout.setter('height'))
-		path = self.json_P
+		path = self.json_p
 		self.checklist_layout.clear_widgets()
 		if path is not None and '.json' in str(path):
 			with open(path) as p:
@@ -157,22 +156,22 @@ class ChecklistWidget(ScrollView):
 			self.response_list = self.result[1]
 			answers = self.result[2]
 			for i in range(len(self.question_list)):
-				#Adds a Label for each question
+				# Adds a Label for each question
 				self.checklist_layout.add_widget(Label(text=str(self.question_list[i]), id='Question ' + str(i), size_hint_y=None))
 				if self.response_list[i] == 'N':
-					#Numerical input only
+					# Numerical input only
 					float_input = FloatInput(hint_text=str(self.question_list[i]), id='Response ' + str(i), size_hint_y=None)
 					if answers[i]:
 						float_input.text = answers[i]
 					self.checklist_layout.add_widget(float_input)
 				elif self.response_list[i] == 'T':
-					#text input
+					# Text input
 					text_input = TextInput(hint_text=str(self.question_list[i]), id='Response ' + str(i), size_hint_y=None)
 					if answers[i]:
 						text_input.text = answers[i]
 					self.checklist_layout.add_widget(text_input)
 				elif self.response_list[i] == 'Y':
-					#Yes/No radio buttons
+					# Yes/No radio buttons
 					yes_no_responses = BoxLayout(orientation='vertical', id='Response ' + str(i), size_hint_y=None)
 					yes_response = BoxLayout(orientation='horizontal', id='sub Response' + str(i))
 					yes_response.add_widget(Label(text='Yes', id='Response ' + str(i)))
@@ -205,28 +204,25 @@ class ChecklistWidget(ScrollView):
 									response.add_widget(text_input)
 									check_box = CheckBox(id='Response ' + str(i))
 									check_box.active = answers[i][1][j]
-									response.add_widget(check_box)
-									multiple_responses.add_widget(response)
-									break
 								except IndexError:
 									text_input.text = ''
 									check_box = CheckBox(id='Response ' + str(i))
 									check_box.active = False
-									response.add_widget(check_box)
-									multiple_responses.add_widget(response)
-									break
+								response.add_widget(check_box)
+								multiple_responses.add_widget(response)
+								break
 						check_box = CheckBox(id='Response ' + str(i))
 						try:
 							if answers[i][1][j]:
 								check_box.active = True
-							j += 1
 						except IndexError:
-							j += 1
+							pass
+						j += 1
 						response.add_widget(check_box)
 						multiple_responses.add_widget(response)
 					self.checklist_layout.add_widget(multiple_responses)
 				elif self.response_list[i] == 'D':
-					#Date spinners for month, day and year
+					# Date spinners for month, day and year
 					date_response = BoxLayout(orientation='horizontal', id='Response ' + str(i), size_hint_y=None)
 					month_values = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 					month_spinner = Spinner(
@@ -348,11 +344,10 @@ class ChecklistWidget(ScrollView):
 								try:
 									answers[i][0].append(json_data[qs_in_order[i]]['answer'][j+1])
 									answers[i][1].append(json_data[qs_in_order[i]]['answer'][j+2])
-									break
 								except IndexError:
 									answers[i][1].append(False)
 									answers[i][0].append('')
-									break
+								break
 							elif isinstance(json_data[qs_in_order[i]]['answer'][j+1], bool):
 								answers[i][1].append(json_data[qs_in_order[i]]['answer'][j+1])
 								j += 1
@@ -363,36 +358,26 @@ class ChecklistWidget(ScrollView):
 			elif response_types[i] == 'T':
 				try:
 					answers[i] = json_data[qs_in_order[i]]['answer']
-				except IndexError:
-					answers[i] = ''
-				except KeyError:
+				except (IndexError, KeyError):
 					answers[i] = ''
 			elif response_types[i] == 'N':
 				try:
 					answers[i] = json_data[qs_in_order[i]]['answer']
-				except IndexError:
-					answers[i] = 0
-				except KeyError:
+				except (IndexError, KeyError):
 					answers[i] = 0
 			elif response_types[i] == 'D':
 				answers[i] = []
 				try:
 					for j in json_data[qs_in_order[i]]['answer']:
 						answers[i].append(j)
-				except IndexError:
-					answers[i] = ['January', '01', '2015']
-				except KeyError:
+				except (IndexError, KeyError):
 					answers[i] = ['January', '01', '2015']
 			elif response_types[i] == 'Y':
 				try:
 					answers[i] = []
 					answers[i].append(json_data[qs_in_order[i]]['answer'][1])
 					answers[i].append(json_data[qs_in_order[i]]['answer'][3])
-				except IndexError:
-					answers[i] = []
-					answers[i].append(False)
-					answers[i].append(False)
-				except KeyError:
+				except (IndexError, KeyError):
 					answers[i] = []
 					answers[i].append(False)
 					answers[i].append(False)
@@ -440,7 +425,7 @@ class ChecklistWidget(ScrollView):
 
 	def do_clear_data(self):
 		"""
-		Clears all responses of the curent checklist. This does not delete the checklist.
+		Clears all responses of the current checklist. This does not delete the checklist.
 		"""
 		for child in self.checklist_layout.walk():
 			if isinstance(child, TextInput) or isinstance(child, FloatInput):
@@ -456,14 +441,14 @@ class ChecklistWidget(ScrollView):
 				child.active = False
 
 	def do_delete_data(self):
-		rmtree('/sdcard/operator/checklists/' + self.title)
+		shutil.rmtree('/sdcard/operator/checklists/' + self.title)
 		self.clear_widgets()
 		self.do_get_checklists()
 
 class FloatInput(TextInput):
 	"""
-    Text field that restricts input to numbers.
-    """
+	Text field that restricts input to numbers.
+	"""
 	pat = re.compile('[^0-9]')
 	def insert_text(self, substring, from_undo=False):
 		pat = self.pat
