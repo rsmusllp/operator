@@ -24,6 +24,7 @@ class FileWidget(BoxLayout):
 	def __init__(self, *args, **kwargs):
 		super(FileWidget, self).__init__(*args, **kwargs)
 		self.data = None
+		self.true_path = None
 
 	def open(self, path, filename):
 		"""
@@ -36,7 +37,5 @@ class FileWidget(BoxLayout):
 		"""
 		with open(os.path.join(path, filename[0])) as f:
 			path_list = str(f).split("'")
-			true_path = path_list[1]
-			with open(true_path) as p:
-				self.data = json.load(p)
-		return self.data
+			self.true_path = path_list[1]
+		return self.true_path
