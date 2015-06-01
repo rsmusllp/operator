@@ -26,8 +26,9 @@
 
 <ChecklistWidget@ScrollView>:
     id: checklist_layout
-    
+
 <RootWidget>:
+    screen_manager: screen_manager
     BoxLayout:
         id: root_widget
         orientation: 'vertical'
@@ -49,11 +50,9 @@
                 on_release: app.xmpp_client.update_mood('angry')
         BoxLayout
             ScreenManager:
-                id: _screen_manager
+                id: screen_manager
                 Screen:
                     name: 'Home'
-                    MapPanelWidget:
-                        id: map_panel_widget
                 Screen:
                     name: 'Menu'
                     BoxLayout:
@@ -72,27 +71,27 @@
                                     Button:
                                         background_normal: 'data/images/settings/notes.png'
                                         background_down: 'data/images/settings/notes.png'
-                                        on_release: _screen_manager.current = 'Notes'
+                                        on_release: root.onNextScreen(self, "Notes")
                                     Button:
                                         background_normal: 'data/images/settings/messages.png'
                                         background_down: 'data/images/settings/messages.png'
-                                        on_release: _screen_manager.current = 'Messages'
+                                        on_release: root.onNextScreen(self, "Messages")
                                     Button:
                                         background_normal: 'data/images/settings/recorder.png'
                                         background_down: 'data/images/settings/recorder.png'
-                                        on_release: _screen_manager.current = 'Recorder'
+                                        on_release: root.onNextScreen(self, "Recorder")
                                     Button:
                                         background_normal: 'data/images/settings/soundboard.png'
                                         background_down: 'data/images/settings/soundboard.png'
-                                        on_release: _screen_manager.current = 'Soundboard'
+                                        on_release: root.onNextScreen(self, "Soundboard")
                                     Button:
                                         background_normal: 'data/images/settings/checklist.png'
                                         background_down: 'data/images/settings/checklist.png'
-                                        on_release: _screen_manager.current = 'Checklist'
+                                        on_release: root.onNextScreen(self, "Checklist")
                                     Button:
                                         background_normal: 'data/images/settings/campaigns.png'
                                         background_down: 'data/images/settings/campaigns.png'
-                                        on_release: _screen_manager.current = 'Campaigns'
+                                        on_release: root.onNextScreen(self, "Campaigns")
                 Screen:
                     name: 'Notes'
                     BoxLayout:
@@ -173,35 +172,9 @@
                                 on_release: root.do_play_sound('data/audio/fart.wav')
                 Screen:
                     name: 'Checklist'
-                    BoxLayout:
-                        id: default_layout
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout:
-                            id: checklist_panel_layout
-                            orientation: 'horizontal'
-                            size_hint: 1, .8
-                            Button:
-                                text: 'Physical Security Assessment'
-                                on_release: _screen_manager.current = 'Physical_Assessment'
-                            Button:
-                                text: 'PCI Audit'
-                                on_release: _screen_manager.current = 'PCI_Audit'
-                            Button:
-                                text: 'HIPAA Audit'
-                                on_release: _screen_manager.current = 'HIPAA_Audit'
-                Screen:
-                    name: 'Physical_Assessment'
                     ChecklistWidget:
-                        id: physical_checklist_layout
-                Screen:
-                    name: 'PCI_Audit'
-                    ChecklistWidget:
-                        id: pci_audit
-                Screen:
-                    name: 'HIPAA_Audit'
-                    ChecklistWidget:
-                        id: hipaa_audit
+                        id: checklist_menu
+                        orientaiton: 'vertical'
                 Screen:
                     name: 'Campaigns'
                     BoxLayout:
@@ -223,6 +196,7 @@
             size_hint: 1, .1
             id: tool_panel_layout
             orientation: 'horizontal'
+            name: 'bar'
             Button:
                 background_normal: 'data/images/nav/camera.png'
                 background_down: 'data/images/nav/camera.png'
@@ -230,8 +204,8 @@
             Button:
                 background_normal: 'data/images/nav/map.png'
                 background_down: 'data/images/nav/map.png'
-                on_release: _screen_manager.current = 'Home'
+                on_release: root.onNextScreen(self, "Home")
             Button:
                 background_normal: 'data/images/nav/menu.png'
                 background_down: 'data/images/nav/menu.png'
-                on_release: _screen_manager.current = 'Menu'
+                on_release: root.onNextScreen(self, "Menu")
