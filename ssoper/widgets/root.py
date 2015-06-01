@@ -19,9 +19,15 @@ class RootWidget(BoxLayout):
 		super(RootWidget, self).__init__(*args, **kwargs)
 		self.logger = logging.getLogger("kivy.operator.widgets.root")
 		self._sound_recorder = None
+		self._prev_screens = []
 
 	def do_play_sound(self, sound_file):
 		soundboard.play_sound(sound_file)
+
+	def do_set_screen(self, btn, next_screen):
+		if hasattr(btn.parent, 'name'):
+			self._prev_screens.append(btn.parent.name)
+		self.screen_manager.current = next_screen
 
 	def do_start_recording(self):
 		if self._sound_recorder:
@@ -41,4 +47,3 @@ class RootWidget(BoxLayout):
 
 	def do_take_picture(self):
 		camera.take_picture()
-
