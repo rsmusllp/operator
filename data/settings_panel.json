@@ -1,0 +1,20 @@
+[
+  {
+    "type": "title",
+    "title": "XMPP Settings"
+  },
+  {
+    "type": "string",
+    "title": "Server",
+    "desc": "The server to connect to",
+    "section": "xmpp",
+    "key": "server"
+  },
+  {
+    "type": "string",
+    "title": "Username",
+    "desc": "The username to authenticate with",
+    "section": "xmpp",
+    "key": "username"
+  }
+]

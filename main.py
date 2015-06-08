@@ -67,28 +67,7 @@ class MainApp(App):
 			config.update_config(custom_config, overwrite=False)
 
 	def build_settings(self, settings):
-		settings.add_json_panel('Operator Settings', self.config, data="""
-		[
-			{
-				"type": "title",
-				"title": "XMPP Settings"
-			},
-			{
-				"type": "string",
-				"title": "Server",
-				"desc": "The server to connect to",
-				"section": "xmpp",
-				"key": "server"
-			},
-			{
-				"type": "string",
-				"title": "Username",
-				"desc": "The username to authenticate with",
-				"section": "xmpp",
-				"key": "username"
-			}
-		]
-		""")
+		settings.add_json_panel('Operator Settings', self.config, 'data/settings_panel.json')
 
 	def on_gps_location(self, **kwargs):
 		# kwargs on Galaxy S5 contain:
