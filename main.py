@@ -64,7 +64,7 @@ class MainApp(App):
 		custom_config = os.path.join(os.path.dirname(__file__), 'config.ini')
 		if os.path.isfile(custom_config):
 			self.logger.info('loading custom config: {0}'.format(custom_config))
-			config.update_config(custom_config, overwrite=False)
+			config.update_config(custom_config, overwrite=True)
 
 	def build_settings(self, settings):
 		settings.add_json_panel('Operator Settings', self.config, 'data/settings_panel.json')

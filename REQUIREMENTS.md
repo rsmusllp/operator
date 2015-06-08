@@ -1,16 +1,16 @@
 # Requirements for Operator application
 
-Real Time Map
+~~Real Time Map~~
 
 ~~Camera~~
 
 Blind option for camera
 
-Status Tracker for operatives - red, yellow, green status
+~~Status Tracker for operatives - red, yellow, green status~~
 
 Campaign Support
 
-Map Overlays w/ KML support
+Map Overlays w/ KML support**
 
 Historical Tracking - GPS for operatives
 
@@ -25,3 +25,4 @@ Voice Recorder*
 Soundboard*
 
 \* = in progress
+\*\* = canceled
