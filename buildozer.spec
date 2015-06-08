@@ -7,7 +7,7 @@ package.domain = com.ss
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,wav
+source.include_exts = atlas, ini, jpg, kv, png, py, wav
 
 # (list) Source files to exclude (let empty to not exclude anything)
 #source.exclude_exts = spec
@@ -27,7 +27,7 @@ version = 0.0.1
 
 # (list) Application requirements
 # comma seperated e.g. requirements = sqlite3,kivy
-requirements = kivy,plyer,sleekxmpp,openssl
+requirements = kivy, plyer, sleekxmpp, smoke-zephyr, openssl
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -77,7 +77,7 @@ fullscreen = 1
 #android.p4a_dir =
 
 # (list) python-for-android whitelist
-#android.p4a_whitelist =
+android.p4a_whitelist = unittest/*
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.renpy.android.PythonActivity

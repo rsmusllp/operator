@@ -7,6 +7,7 @@
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
 import logging
+import os
 import time
 
 from ssoper.modules.xmpp import OperatorXMPPClient
@@ -15,32 +16,79 @@ from ssoper.widgets.root import RootWidget
 from kivy.app import App
 from kivy.factory import Factory
 from plyer import gps
+from smoke_zephyr import utilities as sz_utils
 
 Factory.register('MapWidget', module='ssoper.widgets.map')
 Factory.register('ChecklistWidget', module='ssoper.widgets.checklist')
 Factory.register('FileWidget', module='ssoper.widgets.fileselect')
-
-GPS_MAX_UPDATE_FREQUENCY = 30
-XMPP_SERVER = ('98.103.103.163', 443)
-XMPP_USERNAME = ''
-XMPP_PASSWORD = ''
 
 class MainApp(App):
 	def __init__(self, *args, **kwargs):
 		super(MainApp, self).__init__(*args, **kwargs)
 		self.logger = logging.getLogger('kivy.operator.app')
 		self.map = None
-		self.xmpp_client = OperatorXMPPClient(XMPP_SERVER, XMPP_USERNAME, XMPP_PASSWORD)
+		self.xmpp_client = None
 		self.user_location_markers = {}
 		self._last_location_update = 0
 
 	def build(self):
 		self.root = RootWidget()
 		self.map = self.root.ids.map_panel_widget.ids.map_widget
+		self.xmpp_client = OperatorXMPPClient(
+			sz_utils.parse_server(self.config.get('xmpp', 'server'), 5222),
+			self.config.get('xmpp', 'username'),
+			self.config.get('xmpp', 'password')
+		)
 		self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
 		return self.root
+
+	def build_config(self, config):
+		# add default sections here
+		default_sections = ('miscellaneous', 'xmpp')
+		for section in default_sections:
+			if not config.has_section:
+				config.add_section(section)
+
+		# set default / hard-coded options here
+		config.setdefaults('miscellaneous', {
+			'gps_update_freq': '30s'
+		})
+
+		config.setdefaults('xmpp', {
+			'server': '98.103.103.163:443'
+		})
+
+		# load the custom configuration ini file
+		custom_config = os.path.join(os.path.dirname(__file__), 'config.ini')
+		if os.path.isfile(custom_config):
+			self.logger.info('loading custom config: {0}'.format(custom_config))
+			config.update_config(custom_config, overwrite=False)
+
+	def build_settings(self, settings):
+		settings.add_json_panel('Operator Settings', self.config, data="""
+		[
+			{
+				"type": "title",
+				"title": "XMPP Settings"
+			},
+			{
+				"type": "string",
+				"title": "Server",
+				"desc": "The server to connect to",
+				"section": "xmpp",
+				"key": "server"
+			},
+			{
+				"type": "string",
+				"title": "Username",
+				"desc": "The username to authenticate with",
+				"section": "xmpp",
+				"key": "username"
+			}
+		]
+		""")
 
 	def on_gps_location(self, **kwargs):
 		# kwargs on Galaxy S5 contain:
@@ -48,7 +96,7 @@ class MainApp(App):
 		if not ('lat' in kwargs and 'lon' in kwargs):
 			return
 		current_time = time.time()
-		if current_time - self._last_location_update < GPS_MAX_UPDATE_FREQUENCY:
+		if current_time - self._last_location_update < sz_utils.parse_timespan(self.config.get('operator', 'gps_update_freq')):
 			return
 		latitude = kwargs.pop('lat')
 		longitude = kwargs.pop('lon')

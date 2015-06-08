@@ -64,3 +64,6 @@ gmaps/*
 
 # built documentation
 docs/html/*
+
+# config file
+config.ini
