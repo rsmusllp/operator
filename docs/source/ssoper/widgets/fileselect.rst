@@ -1,5 +1,5 @@
 :mod:`widgets.fileselect`
-==================
+=========================
 
 .. module:: widgets.fileselect
    :synopsis:

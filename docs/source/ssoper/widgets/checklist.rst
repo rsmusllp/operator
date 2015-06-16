@@ -1,5 +1,5 @@
 :mod:`widgets.checklist`
-==================
+========================
 
 .. module:: widgets.checklist
    :synopsis:
