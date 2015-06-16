@@ -6,3 +6,5 @@ The ssoper.widgets Package
    :titlesonly:
 
    map.rst
+   checklist.rst
+   fileselect.rst
