@@ -51,20 +51,11 @@ class MainApp(App):
 			if not config.has_section:
 				config.add_section(section)
 
-		# set default / hard-coded options here
-		config.setdefaults('miscellaneous', {
-			'gps_update_freq': '30s'
-		})
-
-		config.setdefaults('xmpp', {
-			'server': '98.103.103.163:443'
-		})
-
 		# load the custom configuration ini file
 		custom_config = os.path.join(os.path.dirname(__file__), 'config.ini')
 		if os.path.isfile(custom_config):
 			self.logger.info('loading custom config: {0}'.format(custom_config))
-			config.update_config(custom_config, overwrite=True)
+			config.update_config(custom_config, overwrite=False)
 
 	def build_settings(self, settings):
 		settings.add_json_panel('Operator Settings', self.config, 'data/settings_panel.json')
@@ -75,7 +66,7 @@ class MainApp(App):
 		if not ('lat' in kwargs and 'lon' in kwargs):
 			return
 		current_time = time.time()
-		if current_time - self._last_location_update < sz_utils.parse_timespan(self.config.get('operator', 'gps_update_freq')):
+		if current_time - self._last_location_update < sz_utils.parse_timespan(self.config.get('miscellaneous', 'gps_update_freq')):
 			return
 		latitude = kwargs.pop('lat')
 		longitude = kwargs.pop('lon')
