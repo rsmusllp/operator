@@ -7,7 +7,7 @@
 Classes
 -------
 
-.. autoclass:: ssoper.widgets.checklist.FileWidget
+.. autoclass:: ssoper.widgets.fileselect.FileWidget
    :show-inheritance:
    :members:
    :special-members: __init__

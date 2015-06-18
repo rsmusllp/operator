@@ -11,6 +11,9 @@
             pos: self.pos
             size: self.size
 
+<NotesWidget@BoxLayout>:
+    id: note_layout
+
 <MapPanelWidget@FloatLayout>:
     id: map_panel_layout
     MapWidget:
@@ -96,20 +99,8 @@
                                         on_release: root.do_set_screen(self, "Campaigns")
                 Screen:
                     name: 'Notes'
-                    BoxLayout:
-                        id: default_layout
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout:
-                            id: notes_panel_layout
-                            orientation: 'horizontal'
-                            size_hint: 1, .8
-                            TextInput:
-                                multiline: True
-                                background_color: [0,0,0,1]
-                                foreground_color: [1,1,1,1]
-                                focus: False
-                                hint_text: 'Put your notes here'
+                    NotesWidget:
+                        id: notes_menu
                 Screen:
                     name: 'Messages'
                     BoxLayout:
@@ -176,7 +167,6 @@
                     name: 'Checklist'
                     ChecklistWidget:
                         id: checklist_menu
-                        orientaiton: 'vertical'
                 Screen:
                     name: 'Campaigns'
                     BoxLayout:

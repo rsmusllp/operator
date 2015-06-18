@@ -5,7 +5,6 @@
 #
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
-import json
 import os
 
 from kivy.uix.boxlayout import BoxLayout

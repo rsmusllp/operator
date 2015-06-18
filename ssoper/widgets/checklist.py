@@ -25,6 +25,7 @@ from kivy.storage.jsonstore import JsonStore
 from kivy.uix.popup import Popup
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
+from kivy.graphics import Color, Rectangle
 
 from ssoper.widgets.fileselect import FileWidget
 
@@ -49,7 +50,27 @@ class ChecklistWidget(ScrollView):
 		self.alive = False
 		self.checklist_menu_layout = GridLayout(cols=1)
 		self.file_select_popup = Popup()
+		self.set_background(self.checklist_menu_layout)
 		self.do_get_checklists()
+
+	def set_background(self, layout):
+		"""
+		Sets a solid color as a background.
+
+		:param layout: The layout for whichever part of the screen should be set.
+		"""
+		layout.bind(size=self._update_rect, pos=self._update_rect)
+
+		with layout.canvas.before:
+			Color(0, 0, 0, 1)
+			self.rect = Rectangle(size=layout.size, pos=layout.pos)
+
+	def _update_rect(self, instance, value):
+		"""
+		Ensures that the canvas fits to the screen should the layout ever change.
+		"""
+		self.rect.pos = instance.pos
+		self.rect.size = instance.size
 
 	def do_get_checklists(self):
 		"""
@@ -116,7 +137,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		Opens the checklist, depending on the request from the user in the base menu.
 
-		:param: The title of the checklist, according to the title field in the .JSON file.
+		:param title: The title of the checklist, according to the title field in the .JSON file.
 		"""
 		self.clear_widgets()
 		self.json_p = self.get_recent_json(title)
@@ -127,7 +148,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		Load the most recent .JSON file in the subdirectory.
 
-		:param: The title of the checklist, according to the title field in the .JSON file.
+		:param title: The title of the checklist, according to the title field in the .JSON file.
 		"""
 		newest = max(glob.iglob(os.path.join('/sdcard/operator/checklists/'+title, '*.[Jj][Ss][Oo][Nn]')), key=os.path.getctime)
 		return newest
@@ -266,6 +287,7 @@ class ChecklistWidget(ScrollView):
 			self.submit_button.bind(on_release=self.do_store_data)
 			self.checklist_layout.add_widget(self.submit_button)
 			self.clear_widgets()
+			self.set_background(self.checklist_layout)
 			self.add_widget(self.checklist_layout)
 			self.loading_message_popup.dismiss()
 			self.alive = True
@@ -308,7 +330,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		Parse through the .JSON input
 
-		:param: JSON file.
+		:param json_data: JSON file.
 		:rtype: array
 		:return: An array of three arrays containing strings
 		"""
@@ -388,7 +410,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		This function will generate a popup that prompts the user to confirm their decision.
 
-		:param: String to indicate the type of action.
+		:param string method: String to indicate the type of action.
 		:rtype: bool
 		:return: Returns a boolean. If true, the action is confirmed.
 		"""
@@ -413,8 +435,8 @@ class ChecklistWidget(ScrollView):
 		"""
 		Calls the appropriate method after being confirmed. If not confirmed, the popup is dismissed with no action taken.
 
-		:param: Boolean to confirm response.
-		:param: String to confrim the type of action.
+		:param boolean response: Boolean to confirm response.
+		:param string method: String to confrim the type of action.
 		"""
 		self.user_response = response
 		if method == "clear" and response:
