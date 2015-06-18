@@ -137,7 +137,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		Opens the checklist, depending on the request from the user in the base menu.
 
-		:param title: The title of the checklist, according to the title field in the .JSON file.
+		:param str title: The title of the checklist, according to the title field in the .JSON file.
 		"""
 		self.clear_widgets()
 		self.json_p = self.get_recent_json(title)
@@ -148,7 +148,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		Load the most recent .JSON file in the subdirectory.
 
-		:param title: The title of the checklist, according to the title field in the .JSON file.
+		:param str title: The title of the checklist, according to the title field in the .JSON file.
 		"""
 		newest = max(glob.iglob(os.path.join('/sdcard/operator/checklists/'+title, '*.[Jj][Ss][Oo][Nn]')), key=os.path.getctime)
 		return newest
@@ -410,7 +410,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		This function will generate a popup that prompts the user to confirm their decision.
 
-		:param string method: String to indicate the type of action.
+		:param str method: String to indicate the type of action.
 		:rtype: bool
 		:return: Returns a boolean. If true, the action is confirmed.
 		"""
@@ -435,8 +435,8 @@ class ChecklistWidget(ScrollView):
 		"""
 		Calls the appropriate method after being confirmed. If not confirmed, the popup is dismissed with no action taken.
 
-		:param boolean response: Boolean to confirm response.
-		:param string method: String to confrim the type of action.
+		:param bool response: Boolean to confirm response.
+		:param str method: String to confrim the type of action.
 		"""
 		self.user_response = response
 		if method == "clear" and response:
