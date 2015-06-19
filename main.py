@@ -15,6 +15,7 @@ from ssoper.widgets.root import RootWidget
 
 from kivy.app import App
 from kivy.factory import Factory
+from kivy.core.window import Window
 
 from plyer import gps
 from smoke_zephyr import utilities as sz_utils
@@ -33,6 +34,7 @@ class MainApp(App):
 		self.xmpp_client = None
 		self.user_location_markers = {}
 		self._last_location_update = 0
+		Window.bind(on_keyboard=self.onBackBtn)
 
 	def build(self):
 		self.root = RootWidget()
@@ -51,12 +53,12 @@ class MainApp(App):
 
 		return self.root
 
-	def on_back_btn(self, window, key, *args):
-		"""
-		Saves when back button is called.
-		"""
+	def onBackBtn(self, window, key, *args):
+		""" To be called whenever user presses Back/Esc Key """
+		# If user presses Back/Esc Key
 		if key == 27:
-			self.submit_button.trigger_action(duration=0)
+			return self.root.onBackBtn()
+		return False
 
 	def build_config(self, config):
 		# add default sections here
