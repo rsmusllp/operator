@@ -29,6 +29,8 @@ from kivy.graphics import Color, Rectangle
 
 from ssoper.widgets.fileselect import FileWidget
 
+from third_party.kivy_toaster.src.toast.androidtoast import toast
+
 
 class ChecklistWidget(ScrollView):
 	screen_manager = ObjectProperty(None)
@@ -113,25 +115,37 @@ class ChecklistWidget(ScrollView):
 		self.file_select_popup = Popup(title='Choose File', content=box, size_hint=(None, None), size=(800, 1000), auto_dismiss=False)
 		self.file_select_popup.open()
 
+	def do_load_true_path(self, path, filename):
+		try:
+			if path is not None and filename is not None:
+				with open(os.path.join(path, filename[0])) as f:
+					path_list = str(f).split("'")
+					self.true_path = path_list[1]
+				return self.true_path
+		except(IOError, IndexError):
+			pass
+
 	def do_add_checklist_location(self):
 		"""
 		Creates the subdirectory for the checklist.
 		"""
-		path = self.filewidget.true_path
+		path = self.do_load_true_path(self.filewidget.path, self.filewidget.filename)
 		if path is not None and '.json' in str(path):
 			with open(path) as p:
 				self.data = json.load(p)
-		title = 'checklist_name_not_found'
-		for line in self.data:
-			if line == 'checklist_title':
-				title = self.data[line]['title']
-		d = "/sdcard/operator/checklists/"+title
-		if not os.path.exists(d):
-			os.makedirs(d)
-		open(d+"/"+title+"_template.json", 'a')
-		shutil.copyfile(str(path), d+"/"+title+"_template.json")
-		self.do_get_checklists()
-		self.file_select_popup.dismiss()
+			title = 'checklist_name_not_found'
+			for line in self.data:
+				if line == 'checklist_title':
+					title = self.data[line]['title']
+			d = "/sdcard/operator/checklists/"+title
+			if not os.path.exists(d):
+				os.makedirs(d)
+			open(d+"/"+title+"_template.json", 'a')
+			shutil.copyfile(str(path), d+"/"+title+"_template.json")
+			self.do_get_checklists()
+			self.file_select_popup.dismiss()
+		else:
+			toast("Not a valid file!", True)
 
 	def do_open_checklist(self, title, event):
 		"""

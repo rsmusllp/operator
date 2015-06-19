@@ -24,6 +24,8 @@ class FileWidget(BoxLayout):
 		super(FileWidget, self).__init__(*args, **kwargs)
 		self.data = None
 		self.true_path = None
+		self.path = None
+		self.filename = None
 
 	def open(self, path, filename):
 		"""
@@ -34,7 +36,6 @@ class FileWidget(BoxLayout):
 		:rtype: JSON object.
 		:return: The opened JSON file.
 		"""
-		with open(os.path.join(path, filename[0])) as f:
-			path_list = str(f).split("'")
-			self.true_path = path_list[1]
-		return self.true_path
+
+		self.path = path
+		self.filename = filename
