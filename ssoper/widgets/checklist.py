@@ -121,7 +121,7 @@ class ChecklistWidget(ScrollView):
 		Does a series of a checks to make sure the file that is trying to be loaded is valid.
 
 		:param str path: The directory of the file.
-		:param array filename: The name of the file.
+		:param list filename: The name of the file.
 		:return: The path to the validated JSON file. If the path is deemed invalid, None is returned.
 		:rtype: str
 		"""
@@ -135,10 +135,10 @@ class ChecklistWidget(ScrollView):
 		if not os.access(full_path, os.R_OK):
 			toast("No permission, please move file", True)
 			return
-		if oct(os.stat(full_path).st_mode & 0777) < 600:
+		if int(oct(os.stat(full_path).st_mode & 0777)) < 600:
 			toast("No permission, please move file", True)
 			return
-		if '.json' not in str(filename[0]):
+		if not str(filename[0]).endswith('.json'):
 			toast("Not a JSON file!", True)
 			return
 		with open(full_path) as f:
@@ -366,8 +366,8 @@ class ChecklistWidget(ScrollView):
 		Parse through the .JSON input
 
 		:param json_data: JSON file.
-		:rtype: array
-		:return: An array of three arrays containing strings
+		:rtype: list
+		:return: An list of three arrays containing strings
 		"""
 		qs = []
 		title = ''

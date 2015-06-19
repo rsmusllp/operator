@@ -36,6 +36,7 @@ class NotesWidget(BoxLayout):
 		self.save_button = Button(text="Save", on_release=lambda x: self.save_data(), size_hint=(1, .1))
 		self.note_layout.add_widget(self.save_button)
 		self.add_widget(self.note_layout)
+		f.close()
 
 	def save_data(self):
 		"""
@@ -44,3 +45,4 @@ class NotesWidget(BoxLayout):
 		f = open('/sdcard/operator/notes.txt', 'w')
 		f.write(self.text_input.text)
 		toast("Notes saved to disk", True)
+		f.close()
