@@ -132,10 +132,7 @@ class ChecklistWidget(ScrollView):
 			toast("Not a valid file!", True)
 			return
 		full_path = os.path.join(path, filename[0])
-		if not os.access(full_path, os.R_OK):
-			toast("No permission, please move file", True)
-			return
-		if int(oct(os.stat(full_path).st_mode & 0777)) < 600:
+		if not os.access(full_path, (os.R_OK | os.W_OK)):
 			toast("No permission, please move file", True)
 			return
 		if not str(filename[0]).endswith('.json'):
