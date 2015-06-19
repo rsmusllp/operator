@@ -5,8 +5,6 @@
 #
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
-import os
-
 from kivy.uix.boxlayout import BoxLayout
 from kivy.lang import Builder
 
@@ -32,9 +30,7 @@ class FileWidget(BoxLayout):
 		Load the .json from the selected path.
 
 		:param str path: The directory of the file.
-		:param str filename: The name of the file.
-		:rtype: JSON object.
-		:return: The opened JSON file.
+		:param array filename: The name of the file.
 		"""
 
 		self.path = path

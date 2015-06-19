@@ -50,6 +50,7 @@ class ChecklistWidget(ScrollView):
 		self.response_list = []
 		self.user_response = False
 		self.alive = False
+		self.rect = Rectangle()
 		self.checklist_menu_layout = GridLayout(cols=1)
 		self.file_select_popup = Popup()
 		self.set_background(self.checklist_menu_layout)
@@ -116,21 +117,43 @@ class ChecklistWidget(ScrollView):
 		self.file_select_popup.open()
 
 	def do_load_true_path(self, path, filename):
-		try:
-			if path is not None and filename is not None:
-				with open(os.path.join(path, filename[0])) as f:
-					path_list = str(f).split("'")
-					self.true_path = path_list[1]
-				return self.true_path
-		except(IOError, IndexError):
-			pass
+		"""
+		Does a series of a checks to make sure the file that is trying to be loaded is valid.
+
+		:param str path: The directory of the file.
+		:param array filename: The name of the file.
+		:return: The path to the validated JSON file. If the path is deemed invalid, None is returned.
+		:rtype: str
+		"""
+		if path is None:
+			toast("Not a valid path!", True)
+			return
+		if not filename:
+			toast("Not a valid file!", True)
+			return
+		full_path = os.path.join(path, filename[0])
+		if not os.access(full_path, os.R_OK):
+			toast("No permission, please move file", True)
+			return
+		if oct(os.stat(full_path).st_mode & 0777) < 600:
+			toast("No permission, please move file", True)
+			return
+		if '.json' not in str(filename[0]):
+			toast("Not a JSON file!", True)
+			return
+		with open(full_path) as f:
+			path_list = str(f).split("'")
+			true_path = path_list[1]
+		if not os.path.exists(true_path):
+			toast("Not a valid path!", True)
+		return true_path
 
 	def do_add_checklist_location(self):
 		"""
 		Creates the subdirectory for the checklist.
 		"""
 		path = self.do_load_true_path(self.filewidget.path, self.filewidget.filename)
-		if path is not None and '.json' in str(path):
+		if path is not None:
 			with open(path) as p:
 				self.data = json.load(p)
 			title = 'checklist_name_not_found'
@@ -144,8 +167,6 @@ class ChecklistWidget(ScrollView):
 			shutil.copyfile(str(path), d+"/"+title+"_template.json")
 			self.do_get_checklists()
 			self.file_select_popup.dismiss()
-		else:
-			toast("Not a valid file!", True)
 
 	def do_open_checklist(self, title, event):
 		"""
@@ -477,6 +498,9 @@ class ChecklistWidget(ScrollView):
 				child.active = False
 
 	def do_delete_data(self):
+		"""
+		Detles desired checklist (the directory).
+		"""
 		shutil.rmtree('/sdcard/operator/checklists/' + self.title)
 		self.clear_widgets()
 		self.do_get_checklists()

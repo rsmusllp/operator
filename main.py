@@ -46,6 +46,9 @@ class MainApp(App):
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
 
+		if not os.path.isdir("/sdcard/operator"):
+			os.makedirs("/sdcard/operator")
+
 		return self.root
 
 	def build_config(self, config):
