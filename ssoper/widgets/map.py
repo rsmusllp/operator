@@ -119,8 +119,8 @@ class MapWidget(gmaps.GMap):
 		self.is_ready = True
 		self.map.getUiSettings().setZoomControlsEnabled(False)
 		self.map.setMapType(MAP_TYPE_HYBRID)
-		if os.access('/storage/sdcard0/map_markers.json', os.R_OK):
-			self.import_marker_file('/storage/sdcard0/map_markers.json')
+		if os.access('/sdcard/operator/map_markers.json', os.R_OK):
+			self.import_marker_file('/sdcard/operator/map_markers.json')
 
 	def import_marker_file(self, filename):
 		"""

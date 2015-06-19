@@ -8,3 +8,4 @@ The ssoper.widgets Package
    map.rst
    checklist.rst
    fileselect.rst
+   notes.rst

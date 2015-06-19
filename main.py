@@ -15,12 +15,15 @@ from ssoper.widgets.root import RootWidget
 
 from kivy.app import App
 from kivy.factory import Factory
+
 from plyer import gps
 from smoke_zephyr import utilities as sz_utils
 
 Factory.register('MapWidget', module='ssoper.widgets.map')
 Factory.register('ChecklistWidget', module='ssoper.widgets.checklist')
 Factory.register('FileWidget', module='ssoper.widgets.fileselect')
+Factory.register('NotesWidget', module='ssoper.widgets.notes')
+Factory.register('Toast', module='third_party.kivy_toaster.src.main')
 
 class MainApp(App):
 	def __init__(self, *args, **kwargs):
@@ -42,6 +45,10 @@ class MainApp(App):
 		self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
+
+		if not os.path.isdir("/sdcard/operator"):
+			os.makedirs("/sdcard/operator")
+
 		return self.root
 
 	def build_config(self, config):

@@ -5,9 +5,6 @@
 #
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
-import json
-import os
-
 from kivy.uix.boxlayout import BoxLayout
 from kivy.lang import Builder
 
@@ -25,17 +22,16 @@ class FileWidget(BoxLayout):
 		super(FileWidget, self).__init__(*args, **kwargs)
 		self.data = None
 		self.true_path = None
+		self.path = None
+		self.filename = None
 
 	def open(self, path, filename):
 		"""
 		Load the .json from the selected path.
 
 		:param str path: The directory of the file.
-		:param str filename: The name of the file.
-		:rtype: JSON object.
-		:return: The opened JSON file.
+		:param array filename: The name of the file.
 		"""
-		with open(os.path.join(path, filename[0])) as f:
-			path_list = str(f).split("'")
-			self.true_path = path_list[1]
-		return self.true_path
+
+		self.path = path
+		self.filename = filename

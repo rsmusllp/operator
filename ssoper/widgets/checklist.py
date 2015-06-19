@@ -25,8 +25,11 @@ from kivy.storage.jsonstore import JsonStore
 from kivy.uix.popup import Popup
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
+from kivy.graphics import Color, Rectangle
 
 from ssoper.widgets.fileselect import FileWidget
+
+from third_party.kivy_toaster.src.toast.androidtoast import toast
 
 
 class ChecklistWidget(ScrollView):
@@ -47,9 +50,30 @@ class ChecklistWidget(ScrollView):
 		self.response_list = []
 		self.user_response = False
 		self.alive = False
+		self.rect = Rectangle()
 		self.checklist_menu_layout = GridLayout(cols=1)
 		self.file_select_popup = Popup()
+		self.set_background(self.checklist_menu_layout)
 		self.do_get_checklists()
+
+	def set_background(self, layout):
+		"""
+		Sets a solid color as a background.
+
+		:param layout: The layout for whichever part of the screen should be set.
+		"""
+		layout.bind(size=self._update_rect, pos=self._update_rect)
+
+		with layout.canvas.before:
+			Color(0, 0, 0, 1)
+			self.rect = Rectangle(size=layout.size, pos=layout.pos)
+
+	def _update_rect(self, instance, value):
+		"""
+		Ensures that the canvas fits to the screen should the layout ever change.
+		"""
+		self.rect.pos = instance.pos
+		self.rect.size = instance.size
 
 	def do_get_checklists(self):
 		"""
@@ -92,31 +116,60 @@ class ChecklistWidget(ScrollView):
 		self.file_select_popup = Popup(title='Choose File', content=box, size_hint=(None, None), size=(800, 1000), auto_dismiss=False)
 		self.file_select_popup.open()
 
+	def do_load_true_path(self, path, filename):
+		"""
+		Does a series of a checks to make sure the file that is trying to be loaded is valid.
+
+		:param str path: The directory of the file.
+		:param list filename: The name of the file.
+		:return: The path to the validated JSON file. If the path is deemed invalid, None is returned.
+		:rtype: str
+		"""
+		if path is None:
+			toast("Not a valid path!", True)
+			return
+		if not filename:
+			toast("Not a valid file!", True)
+			return
+		full_path = os.path.join(path, filename[0])
+		if not os.access(full_path, (os.R_OK | os.W_OK)):
+			toast("No permission, please move file", True)
+			return
+		if not str(filename[0]).endswith('.json'):
+			toast("Not a JSON file!", True)
+			return
+		with open(full_path) as f:
+			path_list = str(f).split("'")
+			true_path = path_list[1]
+		if not os.path.exists(true_path):
+			toast("Not a valid path!", True)
+		return true_path
+
 	def do_add_checklist_location(self):
 		"""
 		Creates the subdirectory for the checklist.
 		"""
-		path = self.filewidget.true_path
-		if path is not None and '.json' in str(path):
+		path = self.do_load_true_path(self.filewidget.path, self.filewidget.filename)
+		if path is not None:
 			with open(path) as p:
 				self.data = json.load(p)
-		title = 'checklist_name_not_found'
-		for line in self.data:
-			if line == 'checklist_title':
-				title = self.data[line]['title']
-		d = "/sdcard/operator/checklists/"+title
-		if not os.path.exists(d):
-			os.makedirs(d)
-		open(d+"/"+title+"_template.json", 'a')
-		shutil.copyfile(str(path), d+"/"+title+"_template.json")
-		self.do_get_checklists()
-		self.file_select_popup.dismiss()
+			title = 'checklist_name_not_found'
+			for line in self.data:
+				if line == 'checklist_title':
+					title = self.data[line]['title']
+			d = "/sdcard/operator/checklists/"+title
+			if not os.path.exists(d):
+				os.makedirs(d)
+			open(d+"/"+title+"_template.json", 'a')
+			shutil.copyfile(str(path), d+"/"+title+"_template.json")
+			self.do_get_checklists()
+			self.file_select_popup.dismiss()
 
 	def do_open_checklist(self, title, event):
 		"""
 		Opens the checklist, depending on the request from the user in the base menu.
 
-		:param: The title of the checklist, according to the title field in the .JSON file.
+		:param str title: The title of the checklist, according to the title field in the .JSON file.
 		"""
 		self.clear_widgets()
 		self.json_p = self.get_recent_json(title)
@@ -127,7 +180,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		Load the most recent .JSON file in the subdirectory.
 
-		:param: The title of the checklist, according to the title field in the .JSON file.
+		:param str title: The title of the checklist, according to the title field in the .JSON file.
 		"""
 		newest = max(glob.iglob(os.path.join('/sdcard/operator/checklists/'+title, '*.[Jj][Ss][Oo][Nn]')), key=os.path.getctime)
 		return newest
@@ -266,6 +319,7 @@ class ChecklistWidget(ScrollView):
 			self.submit_button.bind(on_release=self.do_store_data)
 			self.checklist_layout.add_widget(self.submit_button)
 			self.clear_widgets()
+			self.set_background(self.checklist_layout)
 			self.add_widget(self.checklist_layout)
 			self.loading_message_popup.dismiss()
 			self.alive = True
@@ -308,9 +362,9 @@ class ChecklistWidget(ScrollView):
 		"""
 		Parse through the .JSON input
 
-		:param: JSON file.
-		:rtype: array
-		:return: An array of three arrays containing strings
+		:param json_data: JSON file.
+		:rtype: list
+		:return: An list of three arrays containing strings
 		"""
 		qs = []
 		title = ''
@@ -388,7 +442,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		This function will generate a popup that prompts the user to confirm their decision.
 
-		:param: String to indicate the type of action.
+		:param str method: String to indicate the type of action.
 		:rtype: bool
 		:return: Returns a boolean. If true, the action is confirmed.
 		"""
@@ -413,8 +467,8 @@ class ChecklistWidget(ScrollView):
 		"""
 		Calls the appropriate method after being confirmed. If not confirmed, the popup is dismissed with no action taken.
 
-		:param: Boolean to confirm response.
-		:param: String to confrim the type of action.
+		:param bool response: Boolean to confirm response.
+		:param str method: String to confrim the type of action.
 		"""
 		self.user_response = response
 		if method == "clear" and response:
@@ -441,6 +495,9 @@ class ChecklistWidget(ScrollView):
 				child.active = False
 
 	def do_delete_data(self):
+		"""
+		Detles desired checklist (the directory).
+		"""
 		shutil.rmtree('/sdcard/operator/checklists/' + self.title)
 		self.clear_widgets()
 		self.do_get_checklists()
