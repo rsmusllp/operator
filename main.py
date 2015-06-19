@@ -51,6 +51,13 @@ class MainApp(App):
 
 		return self.root
 
+	def on_back_btn(self, window, key, *args):
+		"""
+		Saves when back button is called.
+		"""
+		if key == 27:
+			self.submit_button.trigger_action(duration=0)
+
 	def build_config(self, config):
 		# add default sections here
 		default_sections = ('miscellaneous', 'xmpp')
