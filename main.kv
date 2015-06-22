@@ -1,3 +1,5 @@
+#:import FadeTransition kivy.uix.screenmanager.FadeTransition
+
 <MapToolbarWidget@BoxLayout>:
     size_hint_y: None
     height: '48dp'
@@ -54,6 +56,7 @@
         BoxLayout
             ScreenManager:
                 id: screen_manager
+                transition: FadeTransition()
                 Screen:
                     name: 'Home'
                     MapPanelWidget:

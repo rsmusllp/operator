@@ -6,6 +6,7 @@
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
 import logging
+import threading
 
 from ssoper.modules import camera
 from ssoper.modules import recorder
@@ -13,9 +14,12 @@ from ssoper.modules import soundboard
 from ssoper.utilities import popups
 
 from kivy.properties import ObjectProperty
-
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.popup import Popup
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.app import App
 
 class RootWidget(BoxLayout):
 	screen_manager = ObjectProperty(None)
@@ -23,18 +27,11 @@ class RootWidget(BoxLayout):
 		super(RootWidget, self).__init__(*args, **kwargs)
 		self.logger = logging.getLogger("kivy.operator.widgets.root")
 		self._sound_recorder = None
-		self._prev_screens = []
 		self.list_of_prev_screens = []
+		self.confirmation_popup = Popup()
 
 	def do_play_sound(self, sound_file):
 		soundboard.play_sound(sound_file)
-
-	"""
-	def do_set_screen(self, btn, next_screen):
-		if hasattr(btn.parent, 'name'):
-			self._prev_screens.append(btn.parent.name)
-		self.screen_manager.current = next_screen
-	"""
 
 	def do_start_recording(self):
 		if self._sound_recorder:
@@ -60,18 +57,33 @@ class RootWidget(BoxLayout):
 			self.screen_manager.current = self.list_of_prev_screens.pop()
 			return True
 		else:
-			self.screen_manager.current = "Home"
+			self.prompt_close()
 			return True
 
 	def do_set_screen(self, btn, next_screen):
-		loc = btn.parent
-		try:
-			if loc.name == "bar":
-				self.title = "Home"
-		except AttributeError:
-			while not isinstance(loc, Screen):
-				loc = loc.parent
-			self.title = loc.name
-
-		self.list_of_prev_screens.append(self.title)
+		current_screen_name = self.screen_manager.current_screen.name
+		if not current_screen_name == next_screen:
+			self.list_of_prev_screens.append(current_screen_name)
 		self.screen_manager.current = next_screen
+
+	def prompt_close(self):
+		confirmation_box = BoxLayout(orientation='vertical')
+		confirmation_box.add_widget(Label(text='Do you want to close Operator?'))
+		box_int = BoxLayout(orientation='horizontal')
+		affirm_button = Button(text='Yes')
+		affirm_button.bind(on_release=lambda x: self.choice_false())
+		dismiss_button = Button(text='Cancel')
+		dismiss_button.bind(on_release=lambda x: self.choice_cancel())
+		box_int.add_widget(affirm_button)
+		box_int.add_widget(dismiss_button)
+		confirmation_box.add_widget(box_int)
+		self.confirmation_popup = Popup(title='Confirmation', content=confirmation_box, size_hint=(None, None), size=(500, 500), auto_dismiss=False)
+		self.confirmation_popup.open()
+
+	def choice_cancel(self):
+		self.confirmation_popup.dismiss()
+
+	def choice_false(self):
+		self.confirmation_popup.dismiss()
+		App.get_running_app().stop()
+
