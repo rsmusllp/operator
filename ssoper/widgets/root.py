@@ -33,7 +33,7 @@ class RootWidget(BoxLayout):
 		"""
 		Plays sound file.
 
-		:param sound_file: File location to usable sound file.
+		:param str sound_file: File location to usable sound file.
 		"""
 		soundboard.play_sound(sound_file)
 
@@ -79,11 +79,12 @@ class RootWidget(BoxLayout):
 		"""
 		Dyanmic screen manager. Sets the screen, reading in commands from KV file.
 
-		:param Button btn: Button where the change of screen was requested.
+		:param btn: Button where the change of screen was requested.
+		:type btn: :py:class:`kivy.uix.button.Button`
 		:param str next_screen: String indicating the name of the next screen to switch to.
 		"""
 		current_screen_name = self.screen_manager.current_screen.name
-		if not current_screen_name == next_screen:
+		if current_screen_name != next_screen:
 			self.list_of_prev_screens.append(current_screen_name)
 		self.screen_manager.current = next_screen
 
