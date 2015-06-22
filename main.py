@@ -34,7 +34,7 @@ class MainApp(App):
 		self.xmpp_client = None
 		self.user_location_markers = {}
 		self._last_location_update = 0
-		Window.bind(on_keyboard=self.onBackBtn)
+		Window.bind(on_keyboard=self.on_back_btn)
 
 	def build(self):
 		self.root = RootWidget()
@@ -53,11 +53,11 @@ class MainApp(App):
 
 		return self.root
 
-	def onBackBtn(self, window, key, *args):
+	def on_back_btn(self, window, key, *args):
 		""" To be called whenever user presses Back/Esc Key """
 		# If user presses Back/Esc Key
 		if key == 27:
-			return self.root.onBackBtn()
+			return self.root.on_back_btn()
 		return False
 
 	def build_config(self, config):
