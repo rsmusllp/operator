@@ -9,7 +9,6 @@ Operator Documentation
 .. toctree::
    :maxdepth: 3
    :numbered:
-   :titlesonly:
 
    ssoper/index.rst
 
