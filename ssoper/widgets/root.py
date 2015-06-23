@@ -14,7 +14,6 @@ from ssoper.utilities import popups
 
 from kivy.properties import ObjectProperty
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.uix.button import Button
@@ -94,7 +93,7 @@ class RootWidget(BoxLayout):
 		"""
 		confirmation_box = BoxLayout(orientation='vertical')
 		confirmation_box.add_widget(Label(text='Do you want to close Operator?'))
-		box_int = BoxLayout(orientation='horizontal', spacing=20)
+		box_int = BoxLayout(orientation='horizontal', spacing=50)
 		affirm_button = Button(text='Yes')
 		affirm_button.bind(on_release=lambda x: self.choice_false())
 		dismiss_button = Button(text='Cancel')
@@ -102,7 +101,7 @@ class RootWidget(BoxLayout):
 		box_int.add_widget(affirm_button)
 		box_int.add_widget(dismiss_button)
 		confirmation_box.add_widget(box_int)
-		self.confirmation_popup = Popup(title='Confirmation', content=confirmation_box, size_hint=(.7, .7), size=(500, 500), auto_dismiss=False)
+		self.confirmation_popup = Popup(title='Confirmation', content=confirmation_box, size_hint=(.7, None), size=(500, 500), auto_dismiss=False)
 		self.confirmation_popup.open()
 
 	def choice_false(self):
