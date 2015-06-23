@@ -10,7 +10,6 @@ import functools
 import shutil
 
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 from kivy.core.audio import SoundLoader
 from kivy.uix.scrollview import ScrollView
