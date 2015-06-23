@@ -95,7 +95,7 @@ class MainApp(App):
 		self._last_location_update = current_time
 
 	def on_pause(self):
-		return True
+		return False
 
 	def on_resume(self):
 		pass
