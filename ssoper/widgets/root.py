@@ -94,7 +94,7 @@ class RootWidget(BoxLayout):
 		"""
 		confirmation_box = BoxLayout(orientation='vertical')
 		confirmation_box.add_widget(Label(text='Do you want to close Operator?'))
-		box_int = BoxLayout(orientation='horizontal')
+		box_int = BoxLayout(orientation='horizontal', spacing=20)
 		affirm_button = Button(text='Yes')
 		affirm_button.bind(on_release=lambda x: self.choice_false())
 		dismiss_button = Button(text='Cancel')
@@ -102,7 +102,7 @@ class RootWidget(BoxLayout):
 		box_int.add_widget(affirm_button)
 		box_int.add_widget(dismiss_button)
 		confirmation_box.add_widget(box_int)
-		self.confirmation_popup = Popup(title='Confirmation', content=confirmation_box, size_hint=(None, None), size=(500, 500), auto_dismiss=False)
+		self.confirmation_popup = Popup(title='Confirmation', content=confirmation_box, size_hint=(.7, .7), size=(500, 500), auto_dismiss=False)
 		self.confirmation_popup.open()
 
 	def choice_false(self):
