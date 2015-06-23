@@ -65,12 +65,12 @@ class SoundboardWidget(ScrollView):
 		self.sound_menu_layout.add_widget(new_wav_button)
 		for file in os.listdir("/sdcard/operator/sounds"):
 			if file.endswith(".wav"):
-				paths.append("/sdcard/operator/sounds/"+str(file))
-				name = str(file).replace(' ', '')[:-4]
+				paths.append("/sdcard/operator/sounds/"+file)
+				name = file.replace(' ', '')[:-4].title()
 				titles.append(name)
-		for i in range(len(titles)):
-			sound_button = Button(text=titles[i], size_hint_y=None)
-			sound_button.bind(on_release=functools.partial(self.play_button, paths[i]))
+		for title, path in zip(titles, paths):
+			sound_button = Button(text=title, size_hint_y=None)
+			sound_button.bind(on_release=functools.partial(self.play_button, path))
 			self.sound_menu_layout.add_widget(sound_button)
 		self.add_widget(self.sound_menu_layout)
 
@@ -81,9 +81,9 @@ class SoundboardWidget(ScrollView):
 		:param str sound_file: The path to the WAV file to play.
 		"""
 		self.play_layout.clear_widgets()
-		play_button = Button(text="PLAY", size_hint=(1,.9))
+		play_button = Button(text="PLAY", size_hint=(1, .9))
 		play_button.bind(on_release=functools.partial(self.play_sound, sound_file))
-		return_button = Button (text="Previous", size_hint=(1,.1))
+		return_button = Button (text="Previous", size_hint=(1, .1))
 		return_button.bind(on_release=lambda x: self.show_menu())
 		self.play_layout.add_widget(play_button)
 		self.play_layout.add_widget(return_button)
@@ -135,11 +135,8 @@ class SoundboardWidget(ScrollView):
 		:return: The path to the validated WAV file. If the path is deemed invalid, None is returned.
 		:rtype: str
 		"""
-		if path is None:
+		if path is None or not os.path.isfile(filename[0]):
 			toast("Not a valid path!", True)
-			return
-		if not filename:
-			toast("Not a valid file!", True)
 			return
 		full_path = os.path.join(path, filename[0])
 		if not os.access(full_path, (os.R_OK | os.W_OK)):
@@ -164,7 +161,7 @@ class SoundboardWidget(ScrollView):
 			sep = path.split("/")
 			name = sep[len(sep)-1]
 			d = "/sdcard/operator/sounds/"
-			open(d+name, 'a')
+			open(os.path.join(d, name), 'a')
 			shutil.copyfile(str(path), d+name)
 			self.load_sounds()
 			self.file_select_popup.dismiss()
