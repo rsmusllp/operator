@@ -24,6 +24,7 @@ Factory.register('MapWidget', module='ssoper.widgets.map')
 Factory.register('ChecklistWidget', module='ssoper.widgets.checklist')
 Factory.register('FileWidget', module='ssoper.widgets.fileselect')
 Factory.register('NotesWidget', module='ssoper.widgets.notes')
+Factory.register('SoundboardWidget', module='ssoper.widgets.soundboard')
 Factory.register('Toast', module='third_party.kivy_toaster.src.main')
 
 class MainApp(App):

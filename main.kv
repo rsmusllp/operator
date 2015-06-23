@@ -16,6 +16,9 @@
 <NotesWidget@BoxLayout>:
     id: note_layout
 
+<SoundboardWidget@ScrollView>:
+    id: sound_layout
+
 <MapPanelWidget@FloatLayout>:
     id: map_panel_layout
     MapWidget:
@@ -139,33 +142,8 @@
                                 on_release: root.do_stop_recording()
                 Screen:
                     name: 'Soundboard'
-                    BoxLayout:
-                        id: default_layout
-                        orientation: 'vertical'
-                        spacing: 2
-                        GridLayout:
-                            id: soundboard_panel_layout
-                            rows: 3
-                            cols: 3
-                            size_hint: 1, .8
-                            Button:
-                                text: 'Sad Trombone'
-                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                            Button:
-                                text: 'SpeedLane Turnstyle'
-                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                            Button:
-                                text: 'TriLock Turnstyle'
-                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                            Button:
-                                text: 'THG Turnstyle'
-                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                            Button:
-                                text: 'Phone Ring'
-                                on_release: root.do_play_sound('data/audio/sad_trombone.wav')
-                            Button:
-                                text: 'Diversion'
-                                on_release: root.do_play_sound('data/audio/fart.wav')
+                    SoundboardWidget:
+                        id: sound_menu
                 Screen:
                     name: 'Checklist'
                     ChecklistWidget:
