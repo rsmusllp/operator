@@ -9,3 +9,4 @@ The ssoper.widgets Package
    checklist.rst
    fileselect.rst
    notes.rst
+   root.rst
