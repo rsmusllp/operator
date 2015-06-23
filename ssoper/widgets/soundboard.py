@@ -63,10 +63,10 @@ class SoundboardWidget(ScrollView):
 		new_wav_button = Button(text="Load new WAV", size_hint_y=None)
 		new_wav_button.bind(on_release=lambda x: self.do_popup_file_select())
 		self.sound_menu_layout.add_widget(new_wav_button)
-		for file in os.listdir("/sdcard/operator/sounds"):
-			if file.endswith(".wav"):
-				paths.append("/sdcard/operator/sounds/"+file)
-				name = file.replace(' ', '')[:-4].title()
+		for filename in os.listdir("/sdcard/operator/sounds"):
+			if filename.endswith(".wav"):
+				paths.append(os.path.join("/sdcard/operator/sounds/", filename))
+				name = filename.replace('', '')[:-4].title()
 				titles.append(name)
 		for title, path in zip(titles, paths):
 			sound_button = Button(text=title, size_hint_y=None)
@@ -83,7 +83,7 @@ class SoundboardWidget(ScrollView):
 		self.play_layout.clear_widgets()
 		play_button = Button(text="PLAY", size_hint=(1, .9))
 		play_button.bind(on_release=functools.partial(self.play_sound, sound_file))
-		return_button = Button (text="Previous", size_hint=(1, .1))
+		return_button = Button(text="Previous", size_hint=(1, .1))
 		return_button.bind(on_release=lambda x: self.show_menu())
 		self.play_layout.add_widget(play_button)
 		self.play_layout.add_widget(return_button)

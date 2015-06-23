@@ -10,3 +10,4 @@ The ssoper.widgets Package
    fileselect.rst
    notes.rst
    root.rst
+   soundboard.rst
