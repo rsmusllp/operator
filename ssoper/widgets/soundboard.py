@@ -66,7 +66,7 @@ class SoundboardWidget(ScrollView):
 		for filename in os.listdir("/sdcard/operator/sounds"):
 			if filename.endswith(".wav"):
 				paths.append(os.path.join("/sdcard/operator/sounds/", filename))
-				name = filename.replace('', '')[:-4].title()
+				name = filename[:-4].title()
 				titles.append(name)
 		for title, path in zip(titles, paths):
 			sound_button = Button(text=title, size_hint_y=None)
@@ -159,9 +159,9 @@ class SoundboardWidget(ScrollView):
 		path = self.do_load_true_path(self.filewidget.path, self.filewidget.filename)
 		if path is not None:
 			sep = path.split("/")
-			name = sep[len(sep)-1]
+			name = sep[len(sep) - 1]
 			d = "/sdcard/operator/sounds/"
 			open(os.path.join(d, name), 'a')
-			shutil.copyfile(str(path), d+name)
+			shutil.copyfile(str(path), d + name)
 			self.load_sounds()
 			self.file_select_popup.dismiss()
