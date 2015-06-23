@@ -18,7 +18,7 @@ Historical Tracking - GPS for operatives
 
 Messaging Integration
 
-Checklist View*
+~~Checklist View~~
 
 Voice Recorder*
 
