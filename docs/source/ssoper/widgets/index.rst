@@ -11,3 +11,4 @@ The ssoper.widgets Package
    notes.rst
    root.rst
    soundboard.rst
+   recorder.rst
