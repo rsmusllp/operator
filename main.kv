@@ -19,6 +19,9 @@
 <SoundboardWidget@ScrollView>:
     id: sound_layout
 
+<RecorderWidget@ScrollView>:
+    id: record_layout
+
 <MapPanelWidget@FloatLayout>:
     id: map_panel_layout
     MapWidget:
@@ -126,20 +129,8 @@
                                 hint_text: 'This is where the messages will go'
                 Screen:
                     name: 'Recorder'
-                    BoxLayout:
-                        id: default_layout
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout:
-                            id: recorder_panel_layout
-                            orientation: 'horizontal'
-                            size_hint: 1, .8
-                            Button:
-                                text: 'Start Recorder'
-                                on_release: root.do_start_recording()
-                            Button:
-                                text: 'Stop Recording'
-                                on_release: root.do_stop_recording()
+                    RecorderWidget:
+                        id: recorder_menu
                 Screen:
                     name: 'Soundboard'
                     SoundboardWidget:
