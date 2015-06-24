@@ -31,6 +31,7 @@ from ssoper.widgets.fileselect import FileWidget
 
 from third_party.kivy_toaster.src.toast.androidtoast import toast
 
+DEFAULT_CHECKLIST_NAME = 'Operator Checklist'
 
 class ChecklistWidget(ScrollView):
 	screen_manager = ObjectProperty(None)
@@ -83,14 +84,14 @@ class ChecklistWidget(ScrollView):
 		self.clear_widgets()
 		self.checklist_menu_layout.clear_widgets()
 		titles = []
-		new_json_button = Button(text="Load new checklist", size_hint_y=None)
+		new_json_button = Button(text='Load New Checklist', size_hint_y=None)
 		new_json_button.bind(on_release=lambda x: self.do_popup_file_select())
 		self.checklist_menu_layout.add_widget(new_json_button)
 		for dirname, dirnames, _ in os.walk('/sdcard/operator/checklists/'):
 			for subdirname in dirnames:
 				loc = os.path.join(dirname, subdirname)
 				name = loc.split("/")
-				titles.append(name[len(name)-1])
+				titles.append(name[len(name) - 1])
 		for title in titles:
 			button_to_checklist = Button(text=title, size_hint_y=None)
 			button_to_checklist.bind(on_release=functools.partial(self.do_open_checklist, title))
@@ -150,18 +151,15 @@ class ChecklistWidget(ScrollView):
 		Creates the subdirectory for the checklist.
 		"""
 		path = self.do_load_true_path(self.filewidget.path, self.filewidget.filename)
-		if path is not None:
+		if isinstance(path, str):
 			with open(path) as p:
 				self.data = json.load(p)
-			title = 'checklist_name_not_found'
-			for line in self.data:
-				if line == 'checklist_title':
-					title = self.data[line]['title']
-			d = "/sdcard/operator/checklists/"+title
+			title = self.data.get('title', DEFAULT_CHECKLIST_NAME)
+			d = os.path.join('/sdcard/operator/checklists/', title)
 			if not os.path.exists(d):
 				os.makedirs(d)
-			open(d+"/"+title+"_template.json", 'a')
-			shutil.copyfile(str(path), d+"/"+title+"_template.json")
+			open(os.path.join(d, title + '_template.json'), 'a')
+			shutil.copyfile(path, os.path.join(d, title + '_template.json'))
 			self.do_get_checklists()
 			self.file_select_popup.dismiss()
 
@@ -171,6 +169,7 @@ class ChecklistWidget(ScrollView):
 
 		:param str title: The title of the checklist, according to the title field in the .JSON file.
 		"""
+		toast("Loading Checklist...", True)
 		self.clear_widgets()
 		self.json_p = self.get_recent_json(title)
 		self.title = title
@@ -182,7 +181,7 @@ class ChecklistWidget(ScrollView):
 
 		:param str title: The title of the checklist, according to the title field in the .JSON file.
 		"""
-		newest = max(glob.iglob(os.path.join('/sdcard/operator/checklists/'+title, '*.[Jj][Ss][Oo][Nn]')), key=os.path.getctime)
+		newest = max(glob.iglob(os.path.join('/sdcard/operator/checklists', title, '*.[Jj][Ss][Oo][Nn]')), key=os.path.getctime)
 		return newest
 
 	def on_back_btn(self, window, key, *args):
@@ -201,128 +200,130 @@ class ChecklistWidget(ScrollView):
 		self.checklist_layout.bind(minimum_height=self.checklist_layout.setter('height'))
 		path = self.json_p
 		self.checklist_layout.clear_widgets()
-		if path is not None and '.json' in str(path):
-			with open(path) as p:
-				self.data = json.load(p)
-			self.result = self.decode_json(self.data)
-			self.question_list = self.result[0]
-			self.response_list = self.result[1]
-			answers = self.result[2]
-			for i in range(len(self.question_list)):
-				# Adds a Label for each question
-				self.checklist_layout.add_widget(Label(text=str(self.question_list[i]), id='Question ' + str(i), size_hint_y=None))
-				if self.response_list[i] == 'N':
-					# Numerical input only
-					float_input = FloatInput(hint_text=str(self.question_list[i]), id='Response ' + str(i), size_hint_y=None)
-					if answers[i]:
-						float_input.text = answers[i]
-					self.checklist_layout.add_widget(float_input)
-				elif self.response_list[i] == 'T':
-					# Text input
-					text_input = TextInput(hint_text=str(self.question_list[i]), id='Response ' + str(i), size_hint_y=None)
-					if answers[i]:
-						text_input.text = answers[i]
-					self.checklist_layout.add_widget(text_input)
-				elif self.response_list[i] == 'Y':
-					# Yes/No radio buttons
-					yes_no_responses = BoxLayout(orientation='vertical', id='Response ' + str(i), size_hint_y=None)
-					yes_response = BoxLayout(orientation='horizontal', id='sub Response' + str(i))
-					yes_response.add_widget(Label(text='Yes', id='Response ' + str(i)))
-					yes_checkbox = CheckBox(id='Response ' + str(i), group='yes_no' + str(i))
-					if answers[i][0]:
-						yes_checkbox.active = True
-					yes_response.add_widget(yes_checkbox)
-					no_response = BoxLayout(orientation='horizontal', id='sub Response' + str(i))
-					no_response.add_widget(Label(text='No', id='Response ' + str(i)))
-					no_checkbox = CheckBox(id='Response ' + str(i), group='yes_no' + str(i))
-					if answers[i][1]:
-						no_checkbox.active = True
-					no_response.add_widget(no_checkbox)
-					yes_no_responses.add_widget(yes_response)
-					yes_no_responses.add_widget(no_response)
-					self.checklist_layout.add_widget(yes_no_responses)
-				elif self.response_list[i] == 'C':
-					# Checkboxes with support for 'Other' option
-					multiple_responses = BoxLayout(orientation='vertical', id='Response ' + str(i), size_hint_y=None, height=150)
-					j = 0
-					while j < len(answers[i][0]):
-						response = BoxLayout(orientation='horizontal', id='sub Response ' + str(i))
-						response.add_widget(Label(text=str(answers[i][0][j]), id='Response ' + str(i)))
-						if isinstance(answers[i][0][j], unicode):
-							if 'Other' in answers[i][0][j]:
-								response.padding = [20, 0, 73, 0]
-								text_input = TextInput(id='Response ' + str(i) + 'Other', size_hint_x=.8)
-								try:
-									text_input.text = answers[i][0][j+1]
-									response.add_widget(text_input)
-									check_box = CheckBox(id='Response ' + str(i))
-									check_box.active = answers[i][1][j]
-								except IndexError:
-									text_input.text = ''
-									check_box = CheckBox(id='Response ' + str(i))
-									check_box.active = False
-								response.add_widget(check_box)
-								multiple_responses.add_widget(response)
-								break
-						check_box = CheckBox(id='Response ' + str(i))
-						try:
-							if answers[i][1][j]:
-								check_box.active = True
-						except IndexError:
-							pass
-						j += 1
-						response.add_widget(check_box)
-						multiple_responses.add_widget(response)
-					self.checklist_layout.add_widget(multiple_responses)
-				elif self.response_list[i] == 'D':
-					# Date spinners for month, day and year
-					date_response = BoxLayout(orientation='horizontal', id='Response ' + str(i), size_hint_y=None)
-					month_values = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-					month_spinner = Spinner(
-						id='Response ' + str(i),
-						text=answers[i][0],
-						values=month_values)
-					day_values = []
-					for j in range(1, 32):
-						day_values.append("{0:02}".format(j))
-					day_spinner = Spinner(
-						id='Response ' + str(i),
-						text=answers[i][1],
-						values=day_values)
-					year_values = []
-					for j in range(2015, 1900, -1):
-						year_values.append(str(j))
-					year_spinner = Spinner(
-						id='Response ' + str(i),
-						text=answers[i][2],
-						values=year_values)
-					date_response.add_widget(month_spinner)
-					date_response.add_widget(day_spinner)
-					date_response.add_widget(year_spinner)
-					self.checklist_layout.add_widget(date_response)
-			clear_and_delete = BoxLayout(orientation='horizontal', id='clear_and_delete', size_hint_y=None)
-			clear_button = Button(
-				text='Clear',
-				id='clear')
-			delete_button = Button(
-				text='Delete',
-				id='delete')
-			clear_button.bind(on_release=lambda x: self.do_confirm_action("clear"))
-			delete_button.bind(on_release=lambda x: self.do_confirm_action("delete"))
-			clear_and_delete.add_widget(clear_button)
-			clear_and_delete.add_widget(delete_button)
-			self.checklist_layout.add_widget(clear_and_delete)
-			self.submit_button = Button(
-				text='Save',
-				id='submit',
-				size_hint_y=None)
-			self.submit_button.bind(on_release=self.do_store_data)
-			self.checklist_layout.add_widget(self.submit_button)
-			self.clear_widgets()
-			self.set_background(self.checklist_layout)
-			self.add_widget(self.checklist_layout)
-			self.loading_message_popup.dismiss()
-			self.alive = True
+		if path is None or not path.lower().endswith('.json'):
+			return
+		with open(path) as p:
+			self.data = json.load(p)
+		self.result = self.decode_json(self.data)
+		self.question_list = self.result[0]
+		self.response_list = self.result[1]
+		answers = self.result[2]
+		for i, question in enumerate(self.question_list):
+			question = question['question']
+			# Adds a Label for each question
+			self.checklist_layout.add_widget(Label(text=question, id='Question ' + str(i), size_hint_y=None))
+			if self.response_list[i] == 'N':
+				# Numerical input only
+				float_input = FloatInput(hint_text=question, id='Response ' + str(i), size_hint_y=None)
+				if answers[i]:
+					float_input.text = answers[i]
+				self.checklist_layout.add_widget(float_input)
+			elif self.response_list[i] == 'T':
+				# Text input
+				text_input = TextInput(hint_text=question, id='Response ' + str(i), size_hint_y=None)
+				if answers[i]:
+					text_input.text = answers[i]
+				self.checklist_layout.add_widget(text_input)
+			elif self.response_list[i] == 'Y':
+				# Yes/No radio buttons
+				yes_no_responses = BoxLayout(orientation='vertical', id='Response ' + str(i), size_hint_y=None)
+				yes_response = BoxLayout(orientation='horizontal', id='sub Response' + str(i))
+				yes_response.add_widget(Label(text='Yes', id='Response ' + str(i)))
+				yes_checkbox = CheckBox(id='Response ' + str(i), group='yes_no' + str(i))
+				if answers[i][0]:
+					yes_checkbox.active = True
+				yes_response.add_widget(yes_checkbox)
+				no_response = BoxLayout(orientation='horizontal', id='sub Response' + str(i))
+				no_response.add_widget(Label(text='No', id='Response ' + str(i)))
+				no_checkbox = CheckBox(id='Response ' + str(i), group='yes_no' + str(i))
+				if answers[i][1]:
+					no_checkbox.active = True
+				no_response.add_widget(no_checkbox)
+				yes_no_responses.add_widget(yes_response)
+				yes_no_responses.add_widget(no_response)
+				self.checklist_layout.add_widget(yes_no_responses)
+			elif self.response_list[i] == 'C':
+				# Checkboxes with support for 'Other' option
+				multiple_responses = BoxLayout(orientation='vertical', id='Response ' + str(i), size_hint_y=None, height=150)
+				j = 0
+				while j < len(answers[i][0]):
+					response = BoxLayout(orientation='horizontal', id='sub Response ' + str(i))
+					response.add_widget(Label(text=str(answers[i][0][j]), id='Response ' + str(i)))
+					if isinstance(answers[i][0][j], unicode):
+						if 'Other' in answers[i][0][j]:
+							response.padding = [20, 0, 73, 0]
+							text_input = TextInput(id='Response ' + str(i) + 'Other', size_hint_x=.8)
+							try:
+								text_input.text = answers[i][0][j + 1]
+								response.add_widget(text_input)
+								check_box = CheckBox(id='Response ' + str(i))
+								check_box.active = answers[i][1][j]
+							except IndexError:
+								text_input.text = ''
+								check_box = CheckBox(id='Response ' + str(i))
+								check_box.active = False
+							response.add_widget(check_box)
+							multiple_responses.add_widget(response)
+							break
+					check_box = CheckBox(id='Response ' + str(i))
+					try:
+						if answers[i][1][j]:
+							check_box.active = True
+					except IndexError:
+						pass
+					j += 1
+					response.add_widget(check_box)
+					multiple_responses.add_widget(response)
+				self.checklist_layout.add_widget(multiple_responses)
+			elif self.response_list[i] == 'D':
+				# Date spinners for month, day and year
+				date_response = BoxLayout(orientation='horizontal', id='Response ' + str(i), size_hint_y=None)
+				month_values = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+				month_spinner = Spinner(
+					id='Response ' + str(i),
+					text=answers[i][0],
+					values=month_values)
+				day_values = []
+				for j in range(1, 32):
+					day_values.append("{0:02}".format(j))
+				day_spinner = Spinner(
+					id='Response ' + str(i),
+					text=answers[i][1],
+					values=day_values)
+				year_values = []
+				for j in range(2015, 1900, -1):
+					year_values.append(str(j))
+				year_spinner = Spinner(
+					id='Response ' + str(i),
+					text=answers[i][2],
+					values=year_values)
+				date_response.add_widget(month_spinner)
+				date_response.add_widget(day_spinner)
+				date_response.add_widget(year_spinner)
+				self.checklist_layout.add_widget(date_response)
+		clear_and_delete = BoxLayout(orientation='horizontal', id='clear_and_delete', size_hint_y=None)
+		clear_button = Button(
+			text='Clear',
+			id='clear')
+		delete_button = Button(
+			text='Delete',
+			id='delete')
+		clear_button.bind(on_release=lambda x: self.do_confirm_action("clear"))
+		delete_button.bind(on_release=lambda x: self.do_confirm_action("delete"))
+		clear_and_delete.add_widget(clear_button)
+		clear_and_delete.add_widget(delete_button)
+		self.checklist_layout.add_widget(clear_and_delete)
+		self.submit_button = Button(
+			text='Save',
+			id='submit',
+			size_hint_y=None)
+		self.submit_button.bind(on_release=self.do_store_data)
+		self.checklist_layout.add_widget(self.submit_button)
+		self.clear_widgets()
+		self.set_background(self.checklist_layout)
+		self.add_widget(self.checklist_layout)
+		self.loading_message_popup.dismiss()
+		self.alive = True
 
 	def do_store_data(self, event):
 		"""
@@ -354,7 +355,7 @@ class ChecklistWidget(ScrollView):
 		store = JsonStore(file_location)
 		store.put('checklist_title', title=self.title)
 		for i in range(len(questions)):
-			store.put('q'+ str(i), question=questions[i], answer=answers[i], response_type=self.response_list[i])
+			store.put('q' + str(i), question=questions[i], answer=answers[i], response_type=self.response_list[i])
 		self.clear_widgets()
 		self.do_get_checklists()
 
@@ -366,44 +367,32 @@ class ChecklistWidget(ScrollView):
 		:rtype: list
 		:return: An list of three arrays containing strings
 		"""
-		qs = []
-		title = ''
-		for line in json_data:
-			if line == 'checklist_title':
-				title = json_data[line]['title']
-			else:
-				qs.append(line)
-		qs_in_order = [0]*len(qs)
-		for element in qs:
-			number = int(element[1:])
-			qs_in_order[number] = element
-		questions = []
-		for q in qs_in_order:
-			questions.append(json_data[q]['question'])
+		title = json_data.get('title', DEFAULT_CHECKLIST_NAME)
+		questions = json_data.get('questions', [])
 		response_types = []
-		for q in qs_in_order:
-			response_types.append(json_data[q]['response_type'])
-		answers = [0]*len(qs_in_order)
-		for i in range(len(response_types)):
+		for question in questions:
+			response_types.append(question['response_type'])
+		answers = [0] * len(questions)
+		for i, question in enumerate(questions):
 			if response_types[i] == 'C':
 				answers[i] = []
 				answers[i].append([])
 				answers[i].append([])
 				j = 0
-				while j < len(json_data[qs_in_order[i]]['answer']):
-					answers[i][0].append(json_data[qs_in_order[i]]['answer'][j])
+				while j < len(question['answer']):
+					answers[i][0].append(question['answer'][j])
 					try:
-						if isinstance(json_data[qs_in_order[i]]['answer'][j], unicode):
-							if 'Other' in json_data[qs_in_order[i]]['answer'][j]:
+						if isinstance(question['answer'][j], unicode):
+							if 'Other' in question['answer'][j]:
 								try:
-									answers[i][0].append(json_data[qs_in_order[i]]['answer'][j+1])
-									answers[i][1].append(json_data[qs_in_order[i]]['answer'][j+2])
+									answers[i][0].append(question['answer'][j + 1])
+									answers[i][1].append(question['answer'][j + 2])
 								except IndexError:
 									answers[i][1].append(False)
 									answers[i][0].append('')
 								break
-							elif isinstance(json_data[qs_in_order[i]]['answer'][j+1], bool):
-								answers[i][1].append(json_data[qs_in_order[i]]['answer'][j+1])
+							elif isinstance(question['answer'][j + 1], bool):
+								answers[i][1].append(question['answer'][j + 1])
 								j += 1
 						j += 1
 					except IndexError:
@@ -411,26 +400,26 @@ class ChecklistWidget(ScrollView):
 						j += 1
 			elif response_types[i] == 'T':
 				try:
-					answers[i] = json_data[qs_in_order[i]]['answer']
+					answers[i] = question['answer']
 				except (IndexError, KeyError):
 					answers[i] = ''
 			elif response_types[i] == 'N':
 				try:
-					answers[i] = json_data[qs_in_order[i]]['answer']
+					answers[i] = question['answer']
 				except (IndexError, KeyError):
 					answers[i] = 0
 			elif response_types[i] == 'D':
 				answers[i] = []
 				try:
-					for j in json_data[qs_in_order[i]]['answer']:
+					for j in question['answer']:
 						answers[i].append(j)
 				except (IndexError, KeyError):
-					answers[i] = ['January', '01', '2015']
+					answers[i] = ('January', '01', '2015')
 			elif response_types[i] == 'Y':
 				try:
 					answers[i] = []
-					answers[i].append(json_data[qs_in_order[i]]['answer'][1])
-					answers[i].append(json_data[qs_in_order[i]]['answer'][3])
+					answers[i].append(question['answer'][1])
+					answers[i].append(question['answer'][3])
 				except (IndexError, KeyError):
 					answers[i] = []
 					answers[i].append(False)
@@ -448,7 +437,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		confirmation_box = BoxLayout(orientation='vertical')
 		confirmation_box.add_widget(Label(text='Are you sure?\nThis action is permanent.'))
-		affirm_and_neg = BoxLayout(orientation='horizontal')
+		affirm_and_neg = BoxLayout(orientation='horizontal', spacing=50)
 		affirmative = Button(text='Yes')
 		negative = Button(text='Cancel')
 		if method == "clear":
@@ -460,7 +449,7 @@ class ChecklistWidget(ScrollView):
 		affirm_and_neg.add_widget(affirmative)
 		affirm_and_neg.add_widget(negative)
 		confirmation_box.add_widget(affirm_and_neg)
-		self.confirmation_popup = Popup(title='Confirmation', content=confirmation_box, size_hint=(None, None), size=(500, 500), auto_dismiss=False)
+		self.confirmation_popup = Popup(title='Confirmation', content=confirmation_box, size_hint=(.7, None), size=(650, 500), auto_dismiss=False)
 		self.confirmation_popup.open()
 
 	def do_set_response(self, response, method):
@@ -482,7 +471,7 @@ class ChecklistWidget(ScrollView):
 		Clears all responses of the current checklist. This does not delete the checklist.
 		"""
 		for child in self.checklist_layout.walk():
-			if isinstance(child, TextInput) or isinstance(child, FloatInput):
+			if isinstance(child, (TextInput, FloatInput)):
 				child.text = ''
 			elif isinstance(child, Spinner):
 				if 'day' in child.id:
