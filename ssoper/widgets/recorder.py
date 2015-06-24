@@ -14,6 +14,7 @@ from jnius import autoclass
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.gridlayout import GridLayout
 from kivy.graphics import Color, Rectangle
 from kivy.core.audio import SoundLoader
 
@@ -25,16 +26,19 @@ OutputFormat = autoclass('android.media.MediaRecorder$OutputFormat')
 AudioEncoder = autoclass('android.media.MediaRecorder$AudioEncoder')
 File = autoclass('java.io.File')
 
-class RecorderWidget(BoxLayout):
+class RecorderWidget(ScrollView):
 	def __init__(self, *args, **kwargs):
 		super(RecorderWidget, self).__init__(*args, **kwargs)
-		self.record_layout = BoxLayout(orientation='vertical')
+		self.first_layout = BoxLayout(orientation='vertical')
+		self.record_layout = GridLayout(cols=1, spacing=10, size_hint_y=None)
+		self.record_layout.bind(minimum_height=self.record_layout.setter('height'))
 		self.list_layout = ScrollView()
 		self.recorder = MediaRecorder()
 		if not os.path.isdir("/sdcard/operator/recordings"):
 			os.makedirs("/sdcard/operator/recordings")
 		self.is_recording = False
 		self.set_background(self.record_layout)
+		self.set_background(self.first_layout)
 		self.layout_gen()
 
 	def set_background(self, layout):
@@ -61,17 +65,17 @@ class RecorderWidget(BoxLayout):
 		Generate the initial layout with the dynamic recording button.
 		"""
 		if not self.is_recording:
-			rcrd_btn = Button(text="Start Recording", size_hint=(1,.8))
+			rcrd_btn = Button(text="Start Recording", size_hint_y=.8)
 			rcrd_btn.bind(on_release=lambda x: self.start())
 		else:
-			rcrd_btn = Button(text="Stop Recording", size_hint=(1,.8))
+			rcrd_btn = Button(text="Stop Recording", size_hint_y=.2)
 			rcrd_btn.bind(on_release=lambda x: self.stop())
-		list_btn = Button(text="Previous recordings", on_release=lambda x: self.prev_recordings(), size_hint=(1,.2))
-		self.record_layout.clear_widgets()
-		self.record_layout.add_widget(rcrd_btn)
-		self.record_layout.add_widget(list_btn)
+		list_btn = Button(text="Previous recordings", on_release=lambda x: self.prev_recordings(), size_hint_y=None, height=160)
+		self.first_layout.clear_widgets()
+		self.first_layout.add_widget(rcrd_btn)
+		self.first_layout.add_widget(list_btn)
 		self.clear_widgets()
-		self.add_widget(self.record_layout)
+		self.add_widget(self.first_layout)
 
 	def init_recorder(self):
 		"""Initialize the recorder."""
@@ -113,7 +117,9 @@ class RecorderWidget(BoxLayout):
 		self.clear_widgets()
 		self.record_layout.clear_widgets()
 		self.list_layout.clear_widgets()
-		sub_layout = BoxLayout(orientation='vertical')
+		#sub_layout = BoxLayout(orientation='vertical')
+		sub_layout = GridLayout(cols=1, spacing=10, size_hint_y=None)
+		sub_layout.bind(minimum_height=sub_layout.setter('height'))
 		sub_layout.clear_widgets()
 		titles = []
 		paths = []
@@ -125,12 +131,12 @@ class RecorderWidget(BoxLayout):
 				formatted_name = info[3] + ":" + info[4] + ":" + info[5] + " on " + info[1] + "/"+info[2] + "/" + info[0]
 				titles.append(formatted_name)
 		for title, path in zip(titles, paths):
-			play_button = Button(text=title, size_hint_y=None)
+			play_button = Button(text=title, size_hint_y=None, height=160)
 			play_button.bind(on_release=functools.partial(self.play_prev, path))
 			sub_layout.add_widget(play_button)
-		return_btn = Button(text="Previous", on_release=lambda x: self.show_menu(), size_hint_y=.1)
-		self.list_layout.add_widget(sub_layout)
-		self.record_layout.add_widget(self.list_layout)
+		return_btn = Button(text="Previous", on_release=lambda x: self.show_menu(), size_hint_y=None, height=100)
+		#self.list_layout.add_widget(sub_layout)
+		self.record_layout.add_widget(sub_layout)
 		self.record_layout.add_widget(return_btn)
 		self.add_widget(self.record_layout)
 
