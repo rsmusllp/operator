@@ -43,7 +43,9 @@ class ChecklistWidget(ScrollView):
 		super(ChecklistWidget, self).__init__(*args, **kwargs)
 		Window.bind(on_keyboard=self.on_back_btn)
 		self.checklist_layout = GridLayout(cols=1)
-		self.json_p = ''
+		self.checklist_layout.size_hint_y = None
+		self.checklist_layout.id = 'checklist'
+		self.checklist_layout.bind(minimum_height=self.checklist_layout.setter('height'))
 		self.title = ''
 		self.submit_button = Button()
 		self.filewidget = FileWidget()
@@ -171,9 +173,10 @@ class ChecklistWidget(ScrollView):
 		"""
 		toast("Loading Checklist...", True)
 		self.clear_widgets()
-		self.json_p = self.get_recent_json(title)
 		self.title = title
-		self.gen_checklist()
+		json_path = self.get_recent_json(title)
+		if json_path:
+			self.gen_checklist(json_path)
 
 	def get_recent_json(self, title):
 		"""
@@ -191,77 +194,80 @@ class ChecklistWidget(ScrollView):
 		if key == 27:
 			self.submit_button.trigger_action(duration=0)
 
-	def gen_checklist(self):
+	def _get_checklist_widget_check(self, question, i):
+		multiple_responses = BoxLayout(orientation='vertical', id='Response ' + i, size_hint_y=None, height=150)
+		for key, value in question.answer.items():
+			response = BoxLayout(orientation='horizontal', id='sub Response ' + i)
+			response.add_widget(Label(text=key, id='Response ' + i))
+			if key.lower().startswith('other'):
+				response.padding = (20, 0, 73, 0)
+				text_input = TextInput(id='Response ' + i + 'Other', size_hint_x=.8)
+				text_input.text = value if isinstance(value, (str, unicode)) else ''
+				response.add_widget(text_input)
+				check_box = CheckBox(id='Response ' + i)
+				check_box.active = bool(text_input.text)
+			else:
+				check_box = CheckBox(id='Response ' + i)
+				check_box.active = value
+			response.add_widget(check_box)
+			multiple_responses.add_widget(response)
+		return multiple_responses
+
+	def _get_checklist_widget_date(self, question, i):
+		date_widget = BoxLayout(orientation='horizontal', id='Response ' + i, size_hint_y=None)
+		month_spinner = Spinner(id='Response ' + i, text=question.answer[0], values=MONTHS)
+		day_spinner = Spinner(id='Response ' + str(i), text=question.answer[1], values=["{0:02}".format(j) for j in range(1, 32)])
+		year_spinner = Spinner(id='Response ' + i, text=question.answer[2], values=["{0:04}".format(j) for j in range(2100, 1900, -1)])
+		date_widget.add_widget(month_spinner)
+		date_widget.add_widget(day_spinner)
+		date_widget.add_widget(year_spinner)
+		return date_widget
+
+	def _get_checklist_widget_num(self, question, i):
+		float_widget = FloatInput(hint_text=question.question, id='Response ' + i, size_hint_y=None)
+		float_widget.text = str(question.answer)
+		return float_widget
+
+	def _get_checklist_widget_text(self, question, i):
+		text_widget = TextInput(hint_text=question.question, id='Response ' + i, size_hint_y=None)
+		text_widget.text = question.answer
+		return text_widget
+
+	def _get_checklist_widget_yes_no(self, question, i):
+		yes_no_widget = BoxLayout(orientation='vertical', id='Response ' + i, size_hint_y=None)
+		yes_response = BoxLayout(orientation='horizontal', id='sub Response' + i)
+		yes_response.add_widget(Label(text='Yes', id='Response ' + i))
+		yes_checkbox = CheckBox(id='Response ' + i, group='yes_no' + i)
+		yes_response.add_widget(yes_checkbox)
+		no_response = BoxLayout(orientation='horizontal', id='sub Response' + i)
+		no_response.add_widget(Label(text='No', id='Response ' + i))
+		no_checkbox = CheckBox(id='Response ' + i, group='yes_no' + i)
+		no_response.add_widget(no_checkbox)
+		if question.answer:
+			yes_checkbox.active = True
+		else:
+			no_checkbox.active = True
+		yes_no_widget.add_widget(yes_response)
+		yes_no_widget.add_widget(no_response)
+		return yes_no_widget
+
+	def gen_checklist(self, json_path):
 		"""
 		Generates the actual layout, based on the parsed .JSON
+
+		:param str json_path: The path to the JSON checklist file to load.
 		"""
-		self.checklist_layout.size_hint_y = None
-		self.checklist_layout.id = 'checklist'
-		self.checklist_layout.bind(minimum_height=self.checklist_layout.setter('height'))
-		path = self.json_p
 		self.checklist_layout.clear_widgets()
-		if path is None or not path.lower().endswith('.json'):
-			return
-		with open(path) as p:
-			self.data = json.load(p)
+		with open(json_path) as file_h:
+			self.data = json.load(file_h)
 		self.question_list = self.decode_json(self.data)
 		for i, question in enumerate(self.question_list):
 			i = str(i)
-			# Adds a Label for each question
-			self.checklist_layout.add_widget(Label(text=question.question, id='Question ' + i, size_hint_y=None))
-			if question.type == 'N':  # Numerical input only
-				float_input = FloatInput(hint_text=question.question, id='Response ' + i, size_hint_y=None)
-				float_input.text = str(question.answer)
-				self.checklist_layout.add_widget(float_input)
-			elif question.type == 'T':  # Text input
-				text_input = TextInput(hint_text=question.question, id='Response ' + i, size_hint_y=None)
-				text_input.text = question.answer
-				self.checklist_layout.add_widget(text_input)
-			elif question.type == 'Y':  # Yes / No radio buttons
-				yes_no_responses = BoxLayout(orientation='vertical', id='Response ' + i, size_hint_y=None)
-				yes_response = BoxLayout(orientation='horizontal', id='sub Response' + i)
-				yes_response.add_widget(Label(text='Yes', id='Response ' + i))
-				yes_checkbox = CheckBox(id='Response ' + i, group='yes_no' + i)
-				yes_response.add_widget(yes_checkbox)
-				no_response = BoxLayout(orientation='horizontal', id='sub Response' + i)
-				no_response.add_widget(Label(text='No', id='Response ' + i))
-				no_checkbox = CheckBox(id='Response ' + i, group='yes_no' + i)
-				no_response.add_widget(no_checkbox)
-				if question.answer:
-					yes_checkbox.active = True
-				else:
-					no_checkbox.active = True
-				yes_no_responses.add_widget(yes_response)
-				yes_no_responses.add_widget(no_response)
-				self.checklist_layout.add_widget(yes_no_responses)
-			elif question.type == 'C':  # Checkboxes with support for 'Other' option
-				multiple_responses = BoxLayout(orientation='vertical', id='Response ' + i, size_hint_y=None, height=150)
-				for key, value in question.answer.items():
-					response = BoxLayout(orientation='horizontal', id='sub Response ' + i)
-					response.add_widget(Label(text=key, id='Response ' + i))
-					if key.lower().startswith('other'):
-						response.padding = (20, 0, 73, 0)
-						text_input = TextInput(id='Response ' + i + 'Other', size_hint_x=.8)
-						text_input.text = value if isinstance(value, (str, unicode)) else ''
-						response.add_widget(text_input)
-						check_box = CheckBox(id='Response ' + i)
-						check_box.active = bool(text_input.text)
-					else:
-						check_box = CheckBox(id='Response ' + i)
-						check_box.active = value
-					response.add_widget(check_box)
-					multiple_responses.add_widget(response)
-				self.checklist_layout.add_widget(multiple_responses)
-			elif question.type == 'D':  # Date spinners for month, day and year
-				date_response = BoxLayout(orientation='horizontal', id='Response ' + i, size_hint_y=None)
-				month_spinner = Spinner(id='Response ' + i, text=question.answer[0], values=MONTHS)
-				day_spinner = Spinner(id='Response ' + str(i), text=question.answer[1], values=["{0:02}".format(j) for j in range(1, 32)])
-				year_spinner = Spinner(id='Response ' + i, text=question.answer[2], values=["{0:04}".format(j) for j in range(2100, 1900, -1)])
-				date_response.add_widget(month_spinner)
-				date_response.add_widget(day_spinner)
-				date_response.add_widget(year_spinner)
-				self.checklist_layout.add_widget(date_response)
-
+			widget_handler = getattr(self, '_get_checklist_widget_' + question.type, None)
+			if widget_handler:
+				# Adds a Label for each question
+				self.checklist_layout.add_widget(Label(text=question.question, id='Question ' + i, size_hint_y=None))
+				self.checklist_layout.add_widget(widget_handler(question, i))
 		clear_and_delete = BoxLayout(orientation='horizontal', id='clear_and_delete', size_hint_y=None)
 		clear_button = Button(text='Clear', id='clear')
 		delete_button = Button(text='Delete', id='delete')
@@ -323,10 +329,10 @@ class ChecklistWidget(ScrollView):
 		for question in json_data.get('questions', []):
 			if not 'question' in question:
 				continue
-			q_type = question.get('type', 'T')
+			q_type = question.get('type', 'text')
 			q_answer = question.get('answer')
 			if q_answer is None:
-				q_answer = {'T': '', 'N': 0, 'Y': False, 'C': {}, 'D': ('January', '01', '2015')}[q_type]
+				q_answer = {'check': {}, 'date': ('January', '01', '2015'), 'num': 0, 'text': '', 'yes_no': False}[q_type]
 				if isinstance(q_answer, dict) and len(q_answer) == 0:
 					for opt in question.get('options', []):
 						q_answer[opt] = False
