@@ -22,7 +22,6 @@ from kivy.uix.spinner import Spinner
 from kivy.uix.button import Button
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
-from kivy.storage.jsonstore import JsonStore
 from kivy.uix.popup import Popup
 from kivy.properties import ObjectProperty
 from kivy.core.window import Window
@@ -36,6 +35,7 @@ DEFAULT_CHECKLIST_NAME = 'Operator Checklist'
 MONTHS = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
 
 ChecklistQuestion = collections.namedtuple('ChecklistQuestion', ('question', 'type', 'answer'))
+ChecklistResponse = collections.namedtuple('ChecklistResponse', ('question', 'label_widget', 'response_widget'))
 
 class ChecklistWidget(ScrollView):
 	screen_manager = ObjectProperty(None)
@@ -52,6 +52,7 @@ class ChecklistWidget(ScrollView):
 		self.confirmation_popup = Popup()
 		self.data = None
 		self.question_list = []
+		self.response_list = []
 		self.rect = Rectangle()
 		self.checklist_menu_layout = GridLayout(cols=1)
 		self.file_select_popup = Popup()
@@ -127,17 +128,14 @@ class ChecklistWidget(ScrollView):
 		:return: The path to the validated JSON file. If the path is deemed invalid, None is returned.
 		:rtype: str
 		"""
-		if path is None:
-			toast("Not a valid path!", True)
-			return
-		if not filename:
+		full_path = os.path.join(path, filename[0])
+		if not os.path.isfile(full_path):
 			toast("Not a valid file!", True)
 			return
-		full_path = os.path.join(path, filename[0])
 		if not os.access(full_path, (os.R_OK | os.W_OK)):
 			toast("No permission, please move file", True)
 			return
-		if not str(filename[0]).endswith('.json'):
+		if not full_path.endswith('.json'):
 			toast("Not a JSON file!", True)
 			return
 		with open(full_path) as f:
@@ -171,12 +169,13 @@ class ChecklistWidget(ScrollView):
 
 		:param str title: The title of the checklist, according to the title field in the .JSON file.
 		"""
-		toast("Loading Checklist...", True)
+		start_time = time.time()
 		self.clear_widgets()
 		self.title = title
 		json_path = self.get_recent_json(title)
 		if json_path:
 			self.gen_checklist(json_path)
+		toast("Loaded in {0:.2f} seconds".format(time.time() - start_time), True)
 
 	def get_recent_json(self, title):
 		"""
@@ -233,6 +232,9 @@ class ChecklistWidget(ScrollView):
 		text_widget.text = question.answer
 		return text_widget
 
+	def _get_checklist_widget_response_text(self, widget):
+		return widget.text
+
 	def _get_checklist_widget_yes_no(self, question, i):
 		yes_no_widget = BoxLayout(orientation='vertical', id='Response ' + i, size_hint_y=None)
 		yes_response = BoxLayout(orientation='horizontal', id='sub Response' + i)
@@ -261,13 +263,20 @@ class ChecklistWidget(ScrollView):
 		with open(json_path) as file_h:
 			self.data = json.load(file_h)
 		self.question_list = self.decode_json(self.data)
+		self.response_list = []
 		for i, question in enumerate(self.question_list):
 			i = str(i)
 			widget_handler = getattr(self, '_get_checklist_widget_' + question.type, None)
 			if widget_handler:
 				# Adds a Label for each question
-				self.checklist_layout.add_widget(Label(text=question.question, id='Question ' + i, size_hint_y=None))
-				self.checklist_layout.add_widget(widget_handler(question, i))
+				response = ChecklistResponse(
+					question=question,
+					label_widget=Label(text=question.question, id='Question ' + i, size_hint_y=None),
+					response_widget=widget_handler(question, i)
+				)
+				self.checklist_layout.add_widget(response.label_widget)
+				self.checklist_layout.add_widget(response.response_widget)
+				self.response_list.append(response)
 		clear_and_delete = BoxLayout(orientation='horizontal', id='clear_and_delete', size_hint_y=None)
 		clear_button = Button(text='Clear', id='clear')
 		delete_button = Button(text='Delete', id='delete')
@@ -287,33 +296,27 @@ class ChecklistWidget(ScrollView):
 		"""
 		Reads each response and writes a .JSON file with questions and responses.
 		"""
-		questions = self.question_list
-		answers = []
-		for child in self.checklist_layout.walk(loopback=False):
-			if isinstance(child, FloatInput):
-				answers.append(child.text)
-			elif isinstance(child, BoxLayout) and child.id:
-				temp_responses = []
-				for grandchild in child.walk(restrict=True):
-					if grandchild.id:
-						if child.id in grandchild.id and not 'sub' in grandchild.id:
-							if isinstance(grandchild, CheckBox):
-								temp_responses.append(grandchild.active)
-							elif not isinstance(grandchild, BoxLayout):
-								temp_responses.append(grandchild.text)
-				if temp_responses:
-					answers.append(temp_responses)
-			elif isinstance(child, TextInput) and not 'Other' in child.id:
-				answers.append(child.text)
+		store = []
+		answer = None
+		for response in self.response_list:
+			question = response.question
+			widget = response.response_widget
+			widget_handler = getattr(self, '_get_checklist_widget_response_' + question.type, None)
+			if widget_handler:
+				answer = widget_handler(widget)
+			store.append(ChecklistQuestion(
+				question=question.question,
+				type=question.type,
+				answer=answer
+			))
+
 		json_filename = time.strftime('%H:%M_%m-%d-%Y') + '.json'
-		file_location = '/sdcard/operator/checklists/' + self.title + "/" + json_filename
-		d = os.path.dirname(file_location)
-		if not os.path.exists(d):
-			os.makedirs(d)
-		store = JsonStore(file_location)
-		store.put('checklist_title', title=self.title)
-		for i in range(len(questions)):
-			store.put('q' + str(i), question=questions[i], answer=answers[i], response_type=self.response_list[i])
+		file_location = os.path.join('/sdcard/operator/checklists', self.title)
+		if not os.path.exists(file_location):
+			os.makedirs(file_location)
+		store = dict(title=self.title, questions=store)
+		with open(os.path.join(file_location, json_filename), 'w') as file_h:
+			json.dump(store, file_h, sort_keys=True, indent=2, separators=(',', ': '))
 		self.clear_widgets()
 		self.do_get_checklists()
 
