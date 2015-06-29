@@ -197,35 +197,67 @@ class ChecklistWidget(ScrollView):
 		multiple_responses = BoxLayout(orientation='vertical', id='Response ' + i, size_hint_y=None, height=150)
 		for key, value in question.answer.items():
 			response = BoxLayout(orientation='horizontal', id='sub Response ' + i)
-			response.add_widget(Label(text=key, id='Response ' + i))
+			response.add_widget(Label(text=key, id=key))
 			if key.lower().startswith('other'):
 				response.padding = (20, 0, 73, 0)
-				text_input = TextInput(id='Response ' + i + 'Other', size_hint_x=.8)
+				text_input = TextInput(id=key+" Other", size_hint_x=.8)
 				text_input.text = value if isinstance(value, (str, unicode)) else ''
 				response.add_widget(text_input)
-				check_box = CheckBox(id='Response ' + i)
+				check_box = CheckBox(id=key)
 				check_box.active = bool(text_input.text)
 			else:
-				check_box = CheckBox(id='Response ' + i)
+				check_box = CheckBox(id=key)
 				check_box.active = value
 			response.add_widget(check_box)
 			multiple_responses.add_widget(response)
 		return multiple_responses
 
+	def _get_checklist_widget_response_check(self, widget):
+		results = []
+		name = None
+		value = None
+		for child in widget.walk(restrict=True):
+			if isinstance(child, TextInput):
+					name = child.text
+			if isinstance(child, CheckBox):
+				if child.active:
+					value = True
+				else:
+					value = False
+				if not child.id.lower().startswith('other'):
+					name = child.id
+				temp = [name, value]
+				results.append(temp)
+		return results
+
 	def _get_checklist_widget_date(self, question, i):
 		date_widget = BoxLayout(orientation='horizontal', id='Response ' + i, size_hint_y=None)
-		month_spinner = Spinner(id='Response ' + i, text=question.answer[0], values=MONTHS)
-		day_spinner = Spinner(id='Response ' + str(i), text=question.answer[1], values=["{0:02}".format(j) for j in range(1, 32)])
-		year_spinner = Spinner(id='Response ' + i, text=question.answer[2], values=["{0:04}".format(j) for j in range(2100, 1900, -1)])
+		month_spinner = Spinner(id='Month Response ' + i, text=question.answer[0], values=MONTHS)
+		day_spinner = Spinner(id='Day Response ' + str(i), text=question.answer[1], values=["{0:02}".format(j) for j in range(1, 32)])
+		year_spinner = Spinner(id='Year Response ' + i, text=question.answer[2], values=["{0:04}".format(j) for j in range(2100, 1900, -1)])
 		date_widget.add_widget(month_spinner)
 		date_widget.add_widget(day_spinner)
 		date_widget.add_widget(year_spinner)
 		return date_widget
 
+	def _get_checklist_widget_response_date(self, widget):
+		for child in widget.children:
+			if 'Month' in child.id:
+				month = child.text
+			if 'Day' in child.id:
+				day = child.text
+			if 'Year' in child.id:
+				year = child.text
+		date = month + "/" + day + "/" + year
+		return date
+
 	def _get_checklist_widget_num(self, question, i):
 		float_widget = FloatInput(hint_text=question.question, id='Response ' + i, size_hint_y=None)
 		float_widget.text = str(question.answer)
 		return float_widget
+
+	def _get_checklist_widget_response_num(self, widget):
+		return widget.text
 
 	def _get_checklist_widget_text(self, question, i):
 		text_widget = TextInput(hint_text=question.question, id='Response ' + i, size_hint_y=None)
@@ -239,11 +271,11 @@ class ChecklistWidget(ScrollView):
 		yes_no_widget = BoxLayout(orientation='vertical', id='Response ' + i, size_hint_y=None)
 		yes_response = BoxLayout(orientation='horizontal', id='sub Response' + i)
 		yes_response.add_widget(Label(text='Yes', id='Response ' + i))
-		yes_checkbox = CheckBox(id='Response ' + i, group='yes_no' + i)
+		yes_checkbox = CheckBox(id='Yes Response ' + i, group='yes_no' + i)
 		yes_response.add_widget(yes_checkbox)
 		no_response = BoxLayout(orientation='horizontal', id='sub Response' + i)
 		no_response.add_widget(Label(text='No', id='Response ' + i))
-		no_checkbox = CheckBox(id='Response ' + i, group='yes_no' + i)
+		no_checkbox = CheckBox(id='No Response ' + i, group='yes_no' + i)
 		no_response.add_widget(no_checkbox)
 		if question.answer:
 			yes_checkbox.active = True
@@ -253,6 +285,21 @@ class ChecklistWidget(ScrollView):
 		yes_no_widget.add_widget(no_response)
 		return yes_no_widget
 
+	def _get_checklist_widget_response_yes_no(self, widget):
+		for child in widget.children:
+			for child2 in child.children:
+				if isinstance(child2, CheckBox):
+					if 'Yes' in child2.id:
+						if child2.active:
+							return "Yes"
+						else:
+							return "No"
+					else:
+						if child2.active:
+							return "No"
+						else:
+							return "Yes"
+		
 	def gen_checklist(self, json_path):
 		"""
 		Generates the actual layout, based on the parsed .JSON
