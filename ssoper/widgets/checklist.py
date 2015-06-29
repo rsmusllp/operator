@@ -169,13 +169,12 @@ class ChecklistWidget(ScrollView):
 
 		:param str title: The title of the checklist, according to the title field in the .JSON file.
 		"""
-		start_time = time.time()
+		toast("Loading...", True)
 		self.clear_widgets()
 		self.title = title
 		json_path = self.get_recent_json(title)
 		if json_path:
 			self.gen_checklist(json_path)
-		toast("Loaded in {0:.2f} seconds".format(time.time() - start_time), True)
 
 	def get_recent_json(self, title):
 		"""
@@ -200,40 +199,32 @@ class ChecklistWidget(ScrollView):
 			response.add_widget(Label(text=key, id=key))
 			if key.lower().startswith('other'):
 				response.padding = (20, 0, 73, 0)
-				text_input = TextInput(id=key+" Other", size_hint_x=.8)
-				text_input.text = value if isinstance(value, (str, unicode)) else ''
-				response.add_widget(text_input)
-				check_box = CheckBox(id=key)
-				check_box.active = bool(text_input.text)
+				widget = TextInput(id=key, size_hint_x=.8)
+				if isinstance(value, (str, unicode)):
+					widget.text = value
 			else:
-				check_box = CheckBox(id=key)
-				check_box.active = value
-			response.add_widget(check_box)
+				widget = CheckBox(id=key)
+				widget.active = value
+			response.add_widget(widget)
 			multiple_responses.add_widget(response)
 		return multiple_responses
 
 	def _get_checklist_widget_response_check(self, widget):
-		results = []
-		name = None
-		value = None
+		results = {}
 		for child in widget.walk(restrict=True):
 			if isinstance(child, TextInput):
-					name = child.text
-			if isinstance(child, CheckBox):
-				if child.active:
-					value = True
-				else:
-					value = False
-				if not child.id.lower().startswith('other'):
-					name = child.id
-				temp = [name, value]
-				results.append(temp)
+				value = child.text
+			elif isinstance(child, CheckBox):
+				value = child.active
+			else:
+				continue
+			results[child.id] = value
 		return results
 
 	def _get_checklist_widget_date(self, question, i):
 		date_widget = BoxLayout(orientation='horizontal', id='Response ' + i, size_hint_y=None)
 		month_spinner = Spinner(id='Month Response ' + i, text=question.answer[0], values=MONTHS)
-		day_spinner = Spinner(id='Day Response ' + str(i), text=question.answer[1], values=["{0:02}".format(j) for j in range(1, 32)])
+		day_spinner = Spinner(id='Day Response ' + i, text=question.answer[1], values=["{0:02}".format(j) for j in range(1, 32)])
 		year_spinner = Spinner(id='Year Response ' + i, text=question.answer[2], values=["{0:04}".format(j) for j in range(2100, 1900, -1)])
 		date_widget.add_widget(month_spinner)
 		date_widget.add_widget(day_spinner)
@@ -244,12 +235,11 @@ class ChecklistWidget(ScrollView):
 		for child in widget.children:
 			if 'Month' in child.id:
 				month = child.text
-			if 'Day' in child.id:
+			elif 'Day' in child.id:
 				day = child.text
-			if 'Year' in child.id:
+			elif 'Year' in child.id:
 				year = child.text
-		date = month + "/" + day + "/" + year
-		return date
+		return (month, day, year)
 
 	def _get_checklist_widget_num(self, question, i):
 		float_widget = FloatInput(hint_text=question.question, id='Response ' + i, size_hint_y=None)
@@ -257,7 +247,7 @@ class ChecklistWidget(ScrollView):
 		return float_widget
 
 	def _get_checklist_widget_response_num(self, widget):
-		return widget.text
+		return float(widget.text)
 
 	def _get_checklist_widget_text(self, question, i):
 		text_widget = TextInput(hint_text=question.question, id='Response ' + i, size_hint_y=None)
@@ -290,16 +280,10 @@ class ChecklistWidget(ScrollView):
 			for child2 in child.children:
 				if isinstance(child2, CheckBox):
 					if 'Yes' in child2.id:
-						if child2.active:
-							return "Yes"
-						else:
-							return "No"
+						return bool(child2.active)
 					else:
-						if child2.active:
-							return "No"
-						else:
-							return "Yes"
-		
+						return not bool(child2.active)
+
 	def gen_checklist(self, json_path):
 		"""
 		Generates the actual layout, based on the parsed .JSON
@@ -355,7 +339,7 @@ class ChecklistWidget(ScrollView):
 				question=question.question,
 				type=question.type,
 				answer=answer
-			))
+			)._asdict())
 
 		json_filename = time.strftime('%H:%M_%m-%d-%Y') + '.json'
 		file_location = os.path.join('/sdcard/operator/checklists', self.title)
@@ -423,7 +407,7 @@ class ChecklistWidget(ScrollView):
 		Calls the appropriate method after being confirmed. If not confirmed, the popup is dismissed with no action taken.
 
 		:param bool response: Boolean to confirm response.
-		:param str method: String to confrim the type of action.
+		:param str method: String to confirm the type of action.
 		"""
 		if method == "clear" and response:
 			self.do_clear_data()
@@ -450,7 +434,7 @@ class ChecklistWidget(ScrollView):
 
 	def do_delete_data(self):
 		"""
-		Detles desired checklist (the directory).
+		Deletes the desired checklist (the directory).
 		"""
 		shutil.rmtree('/sdcard/operator/checklists/' + self.title)
 		self.clear_widgets()
@@ -460,11 +444,7 @@ class FloatInput(TextInput):
 	"""
 	Text field that restricts input to numbers.
 	"""
-	pat = re.compile('[^0-9]')
+	pat = re.compile(r'-?[^0-9\.]')
 	def insert_text(self, substring, from_undo=False):
-		pat = self.pat
-		if '.' in self.text:
-			s = re.sub(pat, '', substring)
-		else:
-			s = '.'.join([re.sub(pat, '', s) for s in substring.split('.', 1)])
+		s = re.sub(self.pat, '', substring)
 		return super(FloatInput, self).insert_text(s, from_undo=from_undo)
