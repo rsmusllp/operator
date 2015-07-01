@@ -103,6 +103,7 @@ class MainApp(App):
 		pass
 
 	def on_stop(self):
+		self.map.save_marker_file()
 		self.xmpp_client.shutdown()
 
 	def on_user_location_update(self, _, info):

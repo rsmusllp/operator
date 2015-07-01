@@ -11,6 +11,8 @@ import logging
 import os
 import sys
 import threading
+import geojson
+import colorsys
 
 from android.runnable import run_on_ui_thread
 import gmaps
@@ -55,6 +57,10 @@ class MapWidget(gmaps.GMap):
 		self.bind(on_map_click=self.on_map_widget_click, on_ready=self.on_map_widget_ready)
 		self._last_known_location_marker = None
 		self.user_markers = []
+		self.locations = []
+		self.titles = []
+		self.icons = []
+		self.snippets = []
 		self.logger = logging.getLogger("kivy.operator.widgets.map")
 
 	def create_marker(self, **kwargs):
@@ -63,19 +69,19 @@ class MapWidget(gmaps.GMap):
 		specified as key word arguments.
 
 		:param bool draggable: Whether the marker can be moved or not by dragging it.
-		:param icon_color: The color to use for the icon. Specified as a name or position on a color wheel.
-		:type icon_color: float, int, str
+		:param marker_color: The color to use for the icon. Specified as a name or position on a color wheel.
+		:type marker_color: float, int, str
 		:param bool move_camera: Move the camera to focus on the position of the new marker.
 		:param tuple position: The GPS coordinates of where to place the marker as a latitude and longitude pair.
 		:param str snippet: A snippet of text to display when the marker is selected.
 		:param str title: The title for the new marker:
 		:return: The new marker instance.
 		"""
-		icon_color = kwargs.pop('icon_color', None)
-		if isinstance(icon_color, (float, int)):
-			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(icon_color)
-		elif isinstance(icon_color, (str, unicode)):
-			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(getattr(BitmapDescriptorFactory, 'HUE_' + icon_color.upper()))
+		marker_color = kwargs.pop('marker_color', None)
+		if isinstance(marker_color, (float, int)):
+			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(marker_color)
+		elif isinstance(marker_color, (str, unicode)):
+			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(getattr(BitmapDescriptorFactory, 'HUE_' + marker_color.upper()))
 
 		if isinstance(kwargs['position'], (list, tuple)):
 			kwargs['position'] = self.create_latlng(kwargs['position'][0], kwargs['position'][1])
@@ -105,13 +111,22 @@ class MapWidget(gmaps.GMap):
 
 	def on_map_widget_click(self, map_widget, latlng):
 		now = datetime.datetime.now()
+		title = "Marker #{0}".format(len(self.user_markers) + 1)
+		marker_color = 'violet'
+		snippet = now.strftime("Set at %x %X")
 		marker = self.create_marker(
 			draggable=False,
-			icon_color='violet',
+			marker_color=marker_color,
 			position=latlng,
-			snippet=now.strftime("Set at %x %X"),
-			title="Marker #{0}".format(len(self.user_markers) + 1)
+			snippet=snippet,
+			title=title
 		)
+
+		self.locations.append([latlng.longitude, latlng.latitude])
+		self.titles.append(title)
+		self.icons.append(self.color_to_hex(marker_color))
+		self.snippets.append(snippet)
+
 		self.user_markers.append(marker)
 
 	def on_map_widget_ready(self, *args, **kwargs):
@@ -130,17 +145,89 @@ class MapWidget(gmaps.GMap):
 		self.logger.info('loading marker file: ' + filename)
 		with open(filename, 'r') as file_h:
 			data = json.load(file_h)
-		for _, details in data.items():
-			location = details.pop('location', None)
-			if not location:
-				continue
-			if isinstance(location, (list, tuple)) and len(location) == 2:
-				details['position'] = location
+		data = data.items()
+		data = data[1][1]
+		for d in data:
+			pos = [d['geometry']['coordinates'][1], d['geometry']['coordinates'][0]]
+			if "marker-color" in d['properties']:
+				color = d['properties']['marker-color']
 			else:
-				continue
-			details['draggable'] = False
-			details['icon_color'] = details.pop('icon_color', 'violet')
-			self.create_marker(**details)
+				color = "#7F00FF"
+			if "title" in d['properties']:
+				title = d['properties']['title']
+			else:
+				title = ""
+			if "snippet" in d['properties']:
+				snippet = d['properties']['snippet']
+			else:
+				snippet = ""
+
+			self.locations.append(pos)
+			self.titles.append(title)
+			self.icons.append(color)
+			self.snippets.append(snippet)
+
+
+			marker = self.create_marker(
+				draggable=False,
+				marker_color=self.hex_to_hsv(color),
+				position=pos,
+				snippet=snippet,
+				title=title
+				)
+
+			self.user_markers.append(marker)
+
+	def save_marker_file(self):
+		"""
+		opening = {}
+		main_set = []
+		for marker in self.user_markers:
+			entry = {}
+			properties = {}
+			geometry = {}
+			coordinates = []
+
+			geometry['type'] = 'Point'
+			geometry['coordinates'] = coordinates
+			entry['type'] = 'Feature'
+			entry['properties'] = properties
+			entry['geometry'] = geometry
+			main_set.append(entry)
+		opening['type'] = 'FeatureCollection'
+		opening['features'] = main_set
+
+		json_filename = 'map_markers.json'
+		file_location = '/sdcard/operator/'
+		#store = dict(type="FeatureCollection", features=store)
+		with open(os.path.join(file_location, json_filename), 'w') as file_h:
+			json.dump(opening, file_h, sort_keys=True, indent=2, separators=(',', ': '))
+		"""
+
+		features = []
+		for (location, color, title, snippet) in zip(self.locations, self.icons, self.titles, self.snippets):
+			feature = geojson.Feature(geometry=geojson.Point((location)), properties={'marker-color': self.color_to_hex(color), 'title': title, 'snippet': snippet})
+			features.append(feature)
+		if features:
+			feature_collection = geojson.FeatureCollection(features)
+			with open('/sdcard/operator/map_markers.json', 'w') as file_h:
+				geojson.dump(feature_collection, file_h)
+
+	def color_to_hex(self, color):
+		if color == "azure":
+			return "007FFF"
+		if color == "violet":
+			return "7F00FF"
+		else:
+			return "7F00FF"
+
+	def hex_to_hsv(self, value):
+		value = value.lstrip('#')
+		lv = len(value)
+		rgb = tuple(int(value[i:i+lv/3], 16) for i in range(0, lv, lv/3))
+		hsv = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
+		hue = hsv[0]*360
+		return hue
 
 	@run_on_ui_thread
 	def do_cycle_map_type(self):
@@ -174,7 +261,7 @@ class MapWidget(gmaps.GMap):
 			first_location_update = True
 		self._last_known_location_marker = self.create_marker(
 			draggable=False,
-			icon_color='azure',
+			marker_color='azure',
 			position=position,
 			title='Current Location'
 		)
