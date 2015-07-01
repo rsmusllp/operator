@@ -110,6 +110,12 @@ class MapWidget(gmaps.GMap):
 		self.map.moveCamera(self.camera_update_factory.newLatLngZoom(position, self.zoom_level))
 
 	def on_map_widget_click(self, map_widget, latlng):
+		"""
+		Gets called when the user touches the map, indicating they want to create a marker.
+
+		:param map_widget: The current map widget.
+		:param latlng: Coordinates of the click.
+		"""
 		now = datetime.datetime.now()
 		title = "Marker #{0}".format(len(self.user_markers) + 1)
 		marker_color = 'violet'
@@ -121,7 +127,6 @@ class MapWidget(gmaps.GMap):
 			snippet=snippet,
 			title=title
 		)
-
 		self.locations.append([latlng.longitude, latlng.latitude])
 		self.titles.append(title)
 		self.icons.append(self.color_to_hex(marker_color))
@@ -130,6 +135,9 @@ class MapWidget(gmaps.GMap):
 		self.user_markers.append(marker)
 
 	def on_map_widget_ready(self, *args, **kwargs):
+		"""
+		When the map loads, the framework to load a marker file is implemented.
+		"""
 		#self.create_marker(title='SecureState', snippet='The mother ship', position=(41.4237737, -81.5143923))
 		self.is_ready = True
 		self.map.getUiSettings().setZoomControlsEnabled(False)
@@ -141,6 +149,8 @@ class MapWidget(gmaps.GMap):
 		"""
 		Import a JSON file describing custom markers that are to be added to the
 		map.
+
+		:param str filename: Location of the marker JSON.
 		"""
 		self.logger.info('loading marker file: ' + filename)
 		with open(filename, 'r') as file_h:
@@ -148,7 +158,8 @@ class MapWidget(gmaps.GMap):
 		data = data.items()
 		data = data[1][1]
 		for d in data:
-			pos = [d['geometry']['coordinates'][1], d['geometry']['coordinates'][0]]
+			pos_g = [d['geometry']['coordinates'][0], d['geometry']['coordinates'][1]]
+			pos_b = [d['geometry']['coordinates'][1], d['geometry']['coordinates'][0]]
 			if "marker-color" in d['properties']:
 				color = d['properties']['marker-color']
 			else:
@@ -161,49 +172,23 @@ class MapWidget(gmaps.GMap):
 				snippet = d['properties']['snippet']
 			else:
 				snippet = ""
-
-			self.locations.append(pos)
+			self.locations.append(pos_g)
 			self.titles.append(title)
 			self.icons.append(color)
 			self.snippets.append(snippet)
-
-
 			marker = self.create_marker(
 				draggable=False,
 				marker_color=self.hex_to_hsv(color),
-				position=pos,
+				position=pos_b,
 				snippet=snippet,
 				title=title
 				)
-
 			self.user_markers.append(marker)
 
 	def save_marker_file(self):
 		"""
-		opening = {}
-		main_set = []
-		for marker in self.user_markers:
-			entry = {}
-			properties = {}
-			geometry = {}
-			coordinates = []
-
-			geometry['type'] = 'Point'
-			geometry['coordinates'] = coordinates
-			entry['type'] = 'Feature'
-			entry['properties'] = properties
-			entry['geometry'] = geometry
-			main_set.append(entry)
-		opening['type'] = 'FeatureCollection'
-		opening['features'] = main_set
-
-		json_filename = 'map_markers.json'
-		file_location = '/sdcard/operator/'
-		#store = dict(type="FeatureCollection", features=store)
-		with open(os.path.join(file_location, json_filename), 'w') as file_h:
-			json.dump(opening, file_h, sort_keys=True, indent=2, separators=(',', ': '))
+		Saves the current map marker schema to a GeoJson file.
 		"""
-
 		features = []
 		for (location, color, title, snippet) in zip(self.locations, self.icons, self.titles, self.snippets):
 			feature = geojson.Feature(geometry=geojson.Point((location)), properties={'marker-color': self.color_to_hex(color), 'title': title, 'snippet': snippet})
@@ -212,8 +197,20 @@ class MapWidget(gmaps.GMap):
 			feature_collection = geojson.FeatureCollection(features)
 			with open('/sdcard/operator/map_markers.json', 'w') as file_h:
 				geojson.dump(feature_collection, file_h)
+			self.logger.info('Saved map markers')
 
 	def color_to_hex(self, color):
+		"""
+		Ensures that the only color that is being written to file is hex code.
+
+		:param str color: Color could either be a name of a color, or a Hex code (preferred).
+		"""
+		try:
+			color = color.lstrip('#')
+			if int(color, 16):
+				return color
+		except(ValueError):
+			pass
 		if color == "azure":
 			return "007FFF"
 		if color == "violet":
@@ -222,6 +219,11 @@ class MapWidget(gmaps.GMap):
 			return "7F00FF"
 
 	def hex_to_hsv(self, value):
+		"""
+		Converts a color hex code to a HSV value that can be read by the Google marker API.
+
+		:param str value: The hex code.
+		"""
 		value = value.lstrip('#')
 		lv = len(value)
 		rgb = tuple(int(value[i:i+lv/3], 16) for i in range(0, lv, lv/3))
@@ -231,6 +233,9 @@ class MapWidget(gmaps.GMap):
 
 	@run_on_ui_thread
 	def do_cycle_map_type(self):
+		"""
+		Changes map type between satellite and basic.
+		"""
 		map_type = self.map.getMapType()
 		# 4 is the highest map type constant
 		if map_type == 4:
@@ -240,6 +245,9 @@ class MapWidget(gmaps.GMap):
 		self.map.setMapType(map_type)
 
 	def do_move_to_current_location(self):
+		"""
+		Moves the camera to the current location.
+		"""
 		if not self._last_known_location_marker:
 			return
 		self.move_camera(self.create_latlng(self.latitude, self.longitude))

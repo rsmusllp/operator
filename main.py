@@ -40,12 +40,12 @@ class MainApp(App):
 
 	def build(self):
 		self.root = RootWidget()
-		self.map = self.root.ids.map_panel_widget.ids.map_widget
 		self.xmpp_client = OperatorXMPPClient(
 			sz_utils.parse_server(self.config.get('xmpp', 'server'), 5222),
 			self.config.get('xmpp', 'username'),
 			self.config.get('xmpp', 'password')
 		)
+		self.map = self.root.ids.map_panel_widget.ids.map_widget
 		self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
