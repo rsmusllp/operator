@@ -13,6 +13,7 @@ import sys
 import threading
 import geojson
 import colorsys
+import collections
 
 from android.runnable import run_on_ui_thread
 import gmaps
@@ -41,6 +42,8 @@ MAP_TYPE_SATELLITE = 2
 MAP_TYPE_TERRAIN = 3
 """Terrain maps"""
 
+Marker = collections.namedtuple('Marker', ['location', 'title', 'icon', 'snippet'])
+
 class MapWidget(gmaps.GMap):
 	"""
 	A Google Maps widget which is used to display geographical information
@@ -57,10 +60,6 @@ class MapWidget(gmaps.GMap):
 		self.bind(on_map_click=self.on_map_widget_click, on_ready=self.on_map_widget_ready)
 		self._last_known_location_marker = None
 		self.user_markers = []
-		self.locations = []
-		self.titles = []
-		self.icons = []
-		self.snippets = []
 		self.logger = logging.getLogger("kivy.operator.widgets.map")
 
 	def create_marker(self, **kwargs):
@@ -127,12 +126,13 @@ class MapWidget(gmaps.GMap):
 			snippet=snippet,
 			title=title
 		)
-		self.locations.append([latlng.longitude, latlng.latitude])
-		self.titles.append(title)
-		self.icons.append(self.color_to_hex(marker_color))
-		self.snippets.append(snippet)
-
-		self.user_markers.append(marker)
+		marker_value = Marker(
+			location=[latlng.longitude, latlng.latitude],
+			title=title,
+			icon=self.color_to_hex(marker_color),
+			snippet=snippet
+		)
+		self.user_markers.append(marker_value)
 
 	def on_map_widget_ready(self, *args, **kwargs):
 		"""
@@ -155,27 +155,18 @@ class MapWidget(gmaps.GMap):
 		self.logger.info('loading marker file: ' + filename)
 		with open(filename, 'r') as file_h:
 			data = json.load(file_h)
-		data = data.items()
-		data = data[1][1]
-		for d in data:
+		for d in data.get('features',[]):
 			pos_g = [d['geometry']['coordinates'][0], d['geometry']['coordinates'][1]]
 			pos_b = [d['geometry']['coordinates'][1], d['geometry']['coordinates'][0]]
-			if "marker-color" in d['properties']:
-				color = d['properties']['marker-color']
-			else:
-				color = "#7F00FF"
-			if "title" in d['properties']:
-				title = d['properties']['title']
-			else:
-				title = ""
-			if "snippet" in d['properties']:
-				snippet = d['properties']['snippet']
-			else:
-				snippet = ""
-			self.locations.append(pos_g)
-			self.titles.append(title)
-			self.icons.append(color)
-			self.snippets.append(snippet)
+			color = d['properties'].get('marker-color', '#7F00FF')
+			title = d['properties'].get('title', '')
+			snippet = d['properties'].get('snippet', '')
+			marker_value = Marker(
+				location=pos_g,
+				title=title,
+				icon=color,
+				snippet=snippet
+				)
 			marker = self.create_marker(
 				draggable=False,
 				marker_color=self.hex_to_hsv(color),
@@ -183,15 +174,21 @@ class MapWidget(gmaps.GMap):
 				snippet=snippet,
 				title=title
 				)
-			self.user_markers.append(marker)
+			self.user_markers.append(marker_value)
 
 	def save_marker_file(self):
 		"""
 		Saves the current map marker schema to a GeoJson file.
 		"""
 		features = []
-		for (location, color, title, snippet) in zip(self.locations, self.icons, self.titles, self.snippets):
-			feature = geojson.Feature(geometry=geojson.Point((location)), properties={'marker-color': self.color_to_hex(color), 'title': title, 'snippet': snippet})
+		for marker in self.user_markers:
+			feature = geojson.Feature(
+				geometry=geojson.Point((marker.location)),
+				properties={'marker-color': self.color_to_hex(marker.icon),
+					'title': marker.title,
+					'snippet': marker.snippet
+					}
+				)
 			features.append(feature)
 		if features:
 			feature_collection = geojson.FeatureCollection(features)
@@ -228,7 +225,7 @@ class MapWidget(gmaps.GMap):
 		lv = len(value)
 		rgb = tuple(int(value[i:i+lv/3], 16) for i in range(0, lv, lv/3))
 		hsv = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
-		hue = hsv[0]*360
+		hue = hsv[0] * 360
 		return hue
 
 	@run_on_ui_thread
