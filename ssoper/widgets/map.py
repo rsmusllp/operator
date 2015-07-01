@@ -155,7 +155,7 @@ class MapWidget(gmaps.GMap):
 		self.logger.info('loading marker file: ' + filename)
 		with open(filename, 'r') as file_h:
 			data = json.load(file_h)
-		for d in data.get('features',[]):
+		for d in data.get('features', []):
 			pos_g = [d['geometry']['coordinates'][0], d['geometry']['coordinates'][1]]
 			pos_b = [d['geometry']['coordinates'][1], d['geometry']['coordinates'][0]]
 			color = d['properties'].get('marker-color', '#7F00FF')
@@ -184,7 +184,8 @@ class MapWidget(gmaps.GMap):
 		for marker in self.user_markers:
 			feature = geojson.Feature(
 				geometry=geojson.Point((marker.location)),
-				properties={'marker-color': self.color_to_hex(marker.icon),
+				properties={
+					'marker-color': self.color_to_hex(marker.icon),
 					'title': marker.title,
 					'snippet': marker.snippet
 					}
@@ -206,14 +207,13 @@ class MapWidget(gmaps.GMap):
 			color = color.lstrip('#')
 			if int(color, 16):
 				return color
-		except(ValueError):
+		except ValueError:
 			pass
 		if color == "azure":
 			return "007FFF"
 		if color == "violet":
 			return "7F00FF"
-		else:
-			return "7F00FF"
+		return "7F00FF"
 
 	def hex_to_hsv(self, value):
 		"""
@@ -223,7 +223,7 @@ class MapWidget(gmaps.GMap):
 		"""
 		value = value.lstrip('#')
 		lv = len(value)
-		rgb = tuple(int(value[i:i+lv/3], 16) for i in range(0, lv, lv/3))
+		rgb = tuple(int(value[i:i + lv / 3], 16) for i in range(0, lv, lv / 3))
 		hsv = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
 		hue = hsv[0] * 360
 		return hue
