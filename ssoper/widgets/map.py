@@ -42,7 +42,8 @@ MAP_TYPE_SATELLITE = 2
 MAP_TYPE_TERRAIN = 3
 """Terrain maps"""
 
-Marker = collections.namedtuple('Marker', ['location', 'title', 'icon', 'snippet'])
+MAP_MARKER_FILE = '/sdcard/operator/map_markers.geojson'
+Marker = collections.namedtuple('Marker', ['location', 'title', 'color', 'snippet', 'map_object'])
 
 class MapWidget(gmaps.GMap):
 	"""
@@ -80,7 +81,11 @@ class MapWidget(gmaps.GMap):
 		if isinstance(marker_color, (float, int)):
 			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(marker_color)
 		elif isinstance(marker_color, (str, unicode)):
-			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(getattr(BitmapDescriptorFactory, 'HUE_' + marker_color.upper()))
+			if marker_color.startswith('#'):
+				marker_color = self.hex_to_hsv(marker_color)
+			else:
+				marker_color = getattr(BitmapDescriptorFactory, 'HUE_' + marker_color.upper())
+			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(marker_color)
 
 		if isinstance(kwargs['position'], (list, tuple)):
 			kwargs['position'] = self.create_latlng(kwargs['position'][0], kwargs['position'][1])
@@ -119,18 +124,18 @@ class MapWidget(gmaps.GMap):
 		title = "Marker #{0}".format(len(self.user_markers) + 1)
 		marker_color = 'violet'
 		snippet = now.strftime("Set at %x %X")
-		marker = self.create_marker(
-			draggable=False,
-			marker_color=marker_color,
-			position=latlng,
-			snippet=snippet,
-			title=title
-		)
 		marker_value = Marker(
 			location=[latlng.longitude, latlng.latitude],
 			title=title,
-			icon=self.color_to_hex(marker_color),
-			snippet=snippet
+			color=marker_color,
+			snippet=snippet,
+			map_object=self.create_marker(
+				draggable=False,
+				marker_color=marker_color,
+				position=latlng,
+				snippet=snippet,
+				title=title
+			)
 		)
 		self.user_markers.append(marker_value)
 
@@ -142,8 +147,8 @@ class MapWidget(gmaps.GMap):
 		self.is_ready = True
 		self.map.getUiSettings().setZoomControlsEnabled(False)
 		self.map.setMapType(MAP_TYPE_HYBRID)
-		if os.access('/sdcard/operator/map_markers.json', os.R_OK):
-			self.import_marker_file('/sdcard/operator/map_markers.json')
+		if os.access(MAP_MARKER_FILE, os.R_OK):
+			self.import_marker_file(MAP_MARKER_FILE)
 
 	def import_marker_file(self, filename):
 		"""
@@ -158,22 +163,23 @@ class MapWidget(gmaps.GMap):
 		for d in data.get('features', []):
 			pos_g = [d['geometry']['coordinates'][0], d['geometry']['coordinates'][1]]
 			pos_b = [d['geometry']['coordinates'][1], d['geometry']['coordinates'][0]]
-			color = d['properties'].get('marker-color', '#7F00FF')
+			marker_color = d['properties'].get('marker-color', 'violet')
 			title = d['properties'].get('title', '')
 			snippet = d['properties'].get('snippet', '')
+
 			marker_value = Marker(
 				location=pos_g,
 				title=title,
-				icon=color,
-				snippet=snippet
-				)
-			marker = self.create_marker(
-				draggable=False,
-				marker_color=self.hex_to_hsv(color),
-				position=pos_b,
+				color=marker_color,
 				snippet=snippet,
-				title=title
+				map_object=self.create_marker(
+					draggable=False,
+					marker_color=marker_color,
+					position=pos_b,
+					snippet=snippet,
+					title=title
 				)
+			)
 			self.user_markers.append(marker_value)
 
 	def save_marker_file(self):
@@ -183,19 +189,21 @@ class MapWidget(gmaps.GMap):
 		features = []
 		for marker in self.user_markers:
 			feature = geojson.Feature(
-				geometry=geojson.Point((marker.location)),
+				geometry=geojson.Point(marker.location),
 				properties={
-					'marker-color': self.color_to_hex(marker.icon),
+					'marker-color': marker.color,
 					'title': marker.title,
 					'snippet': marker.snippet
-					}
-				)
+				}
+			)
 			features.append(feature)
-		if features:
-			feature_collection = geojson.FeatureCollection(features)
-			with open('/sdcard/operator/map_markers.json', 'w') as file_h:
-				geojson.dump(feature_collection, file_h)
-			self.logger.info('Saved map markers')
+		if not features:
+			self.logger.info('no map markers to save')
+			return
+		feature_collection = geojson.FeatureCollection(features)
+		with open(MAP_MARKER_FILE, 'w') as file_h:
+			geojson.dump(feature_collection, file_h)
+		self.logger.info('saved map markers')
 
 	def color_to_hex(self, color):
 		"""
@@ -215,16 +223,18 @@ class MapWidget(gmaps.GMap):
 			return "7F00FF"
 		return "7F00FF"
 
-	def hex_to_hsv(self, value):
+	def hex_to_hsv(self, color):
 		"""
 		Converts a color hex code to a HSV value that can be read by the Google marker API.
 
-		:param str value: The hex code.
+		:param str color: The hex code.
 		"""
-		value = value.lstrip('#')
-		lv = len(value)
-		rgb = tuple(int(value[i:i + lv / 3], 16) for i in range(0, lv, lv / 3))
-		hsv = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
+		if color.startswith('#'):
+			color = color[1:]
+		if len(color) != 6:
+			raise ValueError('hex color code is in an invalid format')
+		rgb = tuple(int(x, 16) for x in (color[i:i + 2] for i in range(0, 6, 2)))
+		hsv = colorsys.rgb_to_hsv(*rgb)
 		hue = hsv[0] * 360
 		return hue
 
