@@ -43,7 +43,7 @@ MAP_TYPE_TERRAIN = 3
 """Terrain maps"""
 
 MAP_MARKER_FILE = '/sdcard/operator/map_markers.geojson'
-Marker = collections.namedtuple('Marker', ['location', 'title', 'color', 'snippet', 'map_object'])
+Marker = collections.namedtuple('Marker', ['geojson_feature', 'map_object'])
 
 class MapWidget(gmaps.GMap):
 	"""
@@ -124,11 +124,16 @@ class MapWidget(gmaps.GMap):
 		title = "Marker #{0}".format(len(self.user_markers) + 1)
 		marker_color = 'violet'
 		snippet = now.strftime("Set at %x %X")
+		feature = geojson.Feature(
+			geometry=geojson.Point((latlng.longitude, latlng.latitude)),
+			properties={
+				'marker-color': marker_color,
+				'title': title,
+				'snippet': snippet
+			}
+		)
 		marker_value = Marker(
-			location=[latlng.longitude, latlng.latitude],
-			title=title,
-			color=marker_color,
-			snippet=snippet,
+			geojson_feature=feature,
 			map_object=self.create_marker(
 				draggable=False,
 				marker_color=marker_color,
@@ -160,27 +165,24 @@ class MapWidget(gmaps.GMap):
 		self.logger.info('loading marker file: ' + filename)
 		with open(filename, 'r') as file_h:
 			data = json.load(file_h)
-		for d in data.get('features', []):
-			pos_g = [d['geometry']['coordinates'][0], d['geometry']['coordinates'][1]]
-			pos_b = [d['geometry']['coordinates'][1], d['geometry']['coordinates'][0]]
-			marker_color = d['properties'].get('marker-color', 'violet')
-			title = d['properties'].get('title', '')
-			snippet = d['properties'].get('snippet', '')
-
-			marker_value = Marker(
-				location=pos_g,
-				title=title,
-				color=marker_color,
-				snippet=snippet,
-				map_object=self.create_marker(
-					draggable=False,
-					marker_color=marker_color,
-					position=pos_b,
-					snippet=snippet,
-					title=title
+		for feature in data.get('features', []):
+			geometry = feature.get('geometry')
+			if not geometry:
+				continue
+			if geometry.get('type') == 'Point':
+				marker_value = Marker(
+					geojson_feature=feature,
+					map_object=self.create_marker(
+						draggable=False,
+						marker_color=feature['properties'].get('marker-color', 'violet'),
+						position=(geometry['coordinates'][1], geometry['coordinates'][0]),
+						snippet=feature['properties'].get('snippet'),
+						title=feature['properties'].get('title', 'Unknown Marker')
+					)
 				)
-			)
-			self.user_markers.append(marker_value)
+				self.user_markers.append(marker_value)
+			elif geometry.get('type') == 'LineString':
+				pass
 
 	def save_marker_file(self):
 		"""
@@ -188,15 +190,7 @@ class MapWidget(gmaps.GMap):
 		"""
 		features = []
 		for marker in self.user_markers:
-			feature = geojson.Feature(
-				geometry=geojson.Point(marker.location),
-				properties={
-					'marker-color': marker.color,
-					'title': marker.title,
-					'snippet': marker.snippet
-				}
-			)
-			features.append(feature)
+			features.append(marker.geojson_feature)
 		if not features:
 			self.logger.info('no map markers to save')
 			return
