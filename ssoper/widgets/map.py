@@ -44,6 +44,7 @@ MAP_TYPE_TERRAIN = 3
 
 MAP_MARKER_FILE = '/sdcard/operator/map_markers.geojson'
 Marker = collections.namedtuple('Marker', ['geojson_feature', 'map_object'])
+Color_dict = {'azure': '#007FFF', 'blue': '#0000FF', 'cyan': '#00FFFF', 'green': '#00FF00', 'magenta': '#FF00FF', 'orange': '#FF7F00', 'red': '#FF0000', 'rose': '#FF007F', 'violet': '#7F00FF', 'yellow': '#FFFF00'}
 
 class MapWidget(gmaps.GMap):
 	"""
@@ -127,7 +128,7 @@ class MapWidget(gmaps.GMap):
 		feature = geojson.Feature(
 			geometry=geojson.Point((latlng.longitude, latlng.latitude)),
 			properties={
-				'marker-color': marker_color,
+				'marker-color': Color_dict.get(marker_color, '#7F00FF'),
 				'title': title,
 				'snippet': snippet
 			}
@@ -136,7 +137,7 @@ class MapWidget(gmaps.GMap):
 			geojson_feature=feature,
 			map_object=self.create_marker(
 				draggable=False,
-				marker_color=marker_color,
+				marker_color=Color_dict.get(marker_color, '#7F00FF'),
 				position=latlng,
 				snippet=snippet,
 				title=title
@@ -198,24 +199,6 @@ class MapWidget(gmaps.GMap):
 		with open(MAP_MARKER_FILE, 'w') as file_h:
 			geojson.dump(feature_collection, file_h)
 		self.logger.info('saved map markers')
-
-	def color_to_hex(self, color):
-		"""
-		Ensures that the only color that is being written to file is hex code.
-
-		:param str color: Color could either be a name of a color, or a Hex code (preferred).
-		"""
-		try:
-			color = color.lstrip('#')
-			if int(color, 16):
-				return color
-		except ValueError:
-			pass
-		if color == "azure":
-			return "007FFF"
-		if color == "violet":
-			return "7F00FF"
-		return "7F00FF"
 
 	def hex_to_hsv(self, color):
 		"""
