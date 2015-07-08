@@ -457,13 +457,13 @@ class FloatInput(TextInput):
 		elif self.cursor_col == 0 and "-" in self.text:
 			substring = ""
 		else:
-			chr = type(substring)
-			if chr is bytes:
+			str_type = type(substring)
+			if str_type is bytes:
 				int_pat = self._insert_int_patb
 			else:
 				int_pat = self._insert_int_patu
 			if '.' in self.text:
-				substring = re.sub(int_pat, chr(''), substring)
+				substring = re.sub(int_pat, str_type(''), substring)
 			else:
-				substring = '.'.join([re.sub(int_pat, chr(''), k) for k in substring.split(chr('.'), 1)])
+				substring = '.'.join([re.sub(int_pat, str_type(''), k) for k in substring.split(str_type('.'), 1)])
 		return super(FloatInput, self).insert_text(substring, from_undo=False)
