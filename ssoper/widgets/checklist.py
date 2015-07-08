@@ -37,6 +37,7 @@ MONTHS = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'Augus
 ChecklistQuestion = collections.namedtuple('ChecklistQuestion', ('question', 'type', 'answer'))
 ChecklistResponse = collections.namedtuple('ChecklistResponse', ('question', 'label_widget', 'response_widget'))
 
+
 class ChecklistWidget(ScrollView):
 	screen_manager = ObjectProperty(None)
 	def __init__(self, *args, **kwargs):
@@ -361,7 +362,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		questions = []
 		for question in json_data.get('questions', []):
-			if not 'question' in question:
+			if 'question' not in question:
 				continue
 			q_type = question.get('type', 'text')
 			q_answer = question.get('answer')
@@ -440,6 +441,7 @@ class ChecklistWidget(ScrollView):
 		self.clear_widgets()
 		self.do_get_checklists()
 
+
 class FloatInput(TextInput):
 	"""
 	Text field that restricts input to numbers. Allows a negative sign and a period.
@@ -452,6 +454,8 @@ class FloatInput(TextInput):
 				pass
 			else:
 				substring = ""
+		elif self.cursor_col == 0 and "-" in self.text:
+			substring = ""
 		else:
 			chr = type(substring)
 			if chr is bytes:
