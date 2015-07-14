@@ -63,8 +63,6 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		self._raw_client.add_event_handler('message', self.on_xmpp_message_receive)
 		if self._raw_client.connect(server):
 			self.logger.info("connected to xmpp server {0} {1}:{2}".format(self.jid, server[0], server[1]))
-			self.logger.info("PASSWORD = " + password)
-			self.logger.info("SERVER = " + str(server))
 		self._raw_client.process()
 		self.user_locations = {}
 		"""A dictionary mapping user JIDs to their last published location."""
@@ -145,18 +143,13 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 				self.dispatch('on_message_receive', xmpp_msg)
 			except Exception:
 				self.logger.error('failed to dispatch the message update', exc_info=True)
-		
-		#if xmpp_msg['type'] in ('chat', 'normal'):
-		#	info = dict(user=str(xmpp_msg['from']), msg="test")
-		#	self.on_message_receive(xmpp_msg)
-			#msg.reply("What the fuck does \n%(body)s" % msg + " mean, bro?").send()
 
 	def on_message_receive(self, info):
 		self.messages.append(info)
 
 	def on_message_send(self, msg, user):
 		user = user + "@bt"
-		self.logger.info("sending message (" + msg + ") to " + str(user))
+		self.logger.info("sending message to " + str(user))
 		self._raw_client.send_message(mto=str(user), mbody=msg, mtype='chat')
 
 	def on_user_location_update(self, info):

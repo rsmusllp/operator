@@ -112,8 +112,6 @@ class MessageWidget(ScrollView):
 			self.logger.info('receving first message from ' + sender)
 			self.messages[sender] = [text]
 
-		print(self.messages)
-
 	def chat_panel(self, user, event):
 		self.names = {}
 		for name in self.messages:
@@ -130,10 +128,10 @@ class MessageWidget(ScrollView):
 				self.sub_layout.add_widget(lab)
 		else:
 			self.new_lab = Label(text="Start a new conversation with " + user + "!")
-			"""with self.new_lab.canvas.after:
+			with self.new_lab.canvas.after:
 				Color(1, 0, 0)
 				Line(rectangle =(self.new_lab.x+1,self.new_lab.y+1,self.new_lab.width-1,self.new_lab.height-1))
-				Color(1, 1, 1)"""
+				Color(1, 1, 1)
 			self.new = True
 			self.sub_layout.add_widget(self.new_lab)
 		bottom = BoxLayout(size_hint_y=None, height=80)
