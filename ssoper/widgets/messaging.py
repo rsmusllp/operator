@@ -125,13 +125,20 @@ class MessageWidget(ScrollView):
 			temp = self.messages[self.names[user]]
 			for msg in temp:
 				lab = Label(text=user + ": " + msg, size_hint_y=None, height=80, halign='left')
+				lab.bind(texture_size=lab.setter('size'))
+				#lab.width = lab.texture_size[0]
 				self.sub_layout.add_widget(lab)
+				print(str(lab.pos))
+				print(str(lab.size))
 		else:
 			self.new_lab = Label(text="Start a new conversation with " + user + "!")
-			with self.new_lab.canvas.after:
+			print(str(self.new_lab.pos))
+			print(str(self.new_lab.size))
+			with self.new_lab.canvas.before:
+				Rectangle(size=self.new_lab.size, pos=self.new_lab.pos)
 				Color(1, 0, 0)
-				Line(rectangle =(self.new_lab.x+1,self.new_lab.y+1,self.new_lab.width-1,self.new_lab.height-1))
-				Color(1, 1, 1)
+				#Line(rectangle =(self.new_lab.x+1,self.new_lab.y+1,self.new_lab.width-1,self.new_lab.height-1))
+				#Color(1, 1, 1)
 			self.new = True
 			self.sub_layout.add_widget(self.new_lab)
 		bottom = BoxLayout(size_hint_y=None, height=80)
