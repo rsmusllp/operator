@@ -193,12 +193,11 @@ class ChecklistWidget(ScrollView):
 			self.submit_button.trigger_action(duration=0)
 
 	def _get_checklist_widget_check(self, question, i):
-		multiple_responses = BoxLayout(orientation='vertical', id='Response ' + i, size_hint_y=None, height=150)
+		multiple_responses = BoxLayout(orientation='vertical', id='Response ' + i, size_hint_y=None, height=(len(question.answer) * 70), spacing=20)
 		for key, value in question.answer.items():
 			response = BoxLayout(orientation='horizontal', id='sub Response ' + i)
 			response.add_widget(Label(text=key, id=key))
 			if key.lower().startswith('other'):
-				response.padding = (20, 0, 73, 0)
 				widget = TextInput(id=key, size_hint_x=.8)
 				if isinstance(value, (str, unicode)):
 					widget.text = value
