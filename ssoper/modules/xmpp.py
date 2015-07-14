@@ -11,6 +11,8 @@ import android.runnable
 import kivy.event
 import sleekxmpp
 
+import xml.etree.ElementTree as ET
+
 class RawXMPPClient(sleekxmpp.ClientXMPP):
 	"""The raw XMPP connection."""
 	def __init__(self, jid, password):
@@ -26,12 +28,14 @@ class RawXMPPClient(sleekxmpp.ClientXMPP):
 		self.register_plugin('xep_0115')
 		self.register_plugin('xep_0128')
 		self.register_plugin('xep_0163')
+		self.register_plugin('xep_0199')
 
 	def _on_session_start(self, event):
 		self.logger.info('xmpp session started')
 		self.send_presence()
 		self.get_roster()
 		self['xep_0115'].update_caps()
+
 
 class OperatorXMPPClient(kivy.event.EventDispatcher):
 	"""
@@ -48,18 +52,25 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		self.logger = logging.getLogger('kivy.operator.xmpp.client')
 		self.register_event_type('on_user_location_update')
 		self.register_event_type('on_user_mood_update')
+		self.register_event_type('on_message_receive')
+
+		self.messages = []
 
 		self.jid = username + '/operator'
 		self._raw_client = RawXMPPClient(self.jid, password)
 		self._raw_client.add_event_handler('user_location_publish', self.on_xmpp_user_location_publish)
 		self._raw_client.add_event_handler('user_mood_publish', self.on_xmpp_user_mood_publish)
+		self._raw_client.add_event_handler('message', self.on_xmpp_message_receive)
 		if self._raw_client.connect(server):
 			self.logger.info("connected to xmpp server {0} {1}:{2}".format(self.jid, server[0], server[1]))
+			self.logger.info("PASSWORD = " + password)
+			self.logger.info("SERVER = " + str(server))
 		self._raw_client.process()
 		self.user_locations = {}
 		"""A dictionary mapping user JIDs to their last published location."""
 		self.user_moods = {}
 		"""A dictionary mapping user JIDs to their last published mood."""
+		self.users = []
 
 	def update_location(self, position, altitude=None, bearing=None, speed=None):
 		"""
@@ -83,6 +94,18 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		if speed:
 			kwargs['speed'] = speed
 		self._raw_client['xep_0080'].publish_location(**kwargs)
+
+	def get_users(self):
+		names = []
+		roster = self._raw_client.get_roster()
+		root = ET.fromstring(str(roster))
+		for child in root:
+			for children in child:
+				for chillen in children.items():
+					if chillen[0] == 'jid':
+						names.append(chillen[1])
+		self.users = names
+		return names
 
 	def update_mood(self, mood):
 		"""
@@ -114,6 +137,27 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 			self.dispatch('on_user_mood_update', info)
 		except Exception:
 			self.logger.error('failed to dispatch the user mood update', exc_info=True)
+
+	@android.runnable.run_on_ui_thread
+	def on_xmpp_message_receive(self, xmpp_msg):
+		if xmpp_msg['type'] in ('chat', 'normal'):
+			try:
+				self.dispatch('on_message_receive', xmpp_msg)
+			except Exception:
+				self.logger.error('failed to dispatch the message update', exc_info=True)
+		
+		#if xmpp_msg['type'] in ('chat', 'normal'):
+		#	info = dict(user=str(xmpp_msg['from']), msg="test")
+		#	self.on_message_receive(xmpp_msg)
+			#msg.reply("What the fuck does \n%(body)s" % msg + " mean, bro?").send()
+
+	def on_message_receive(self, info):
+		self.messages.append(info)
+
+	def on_message_send(self, msg, user):
+		user = user + "@bt"
+		self.logger.info("sending message (" + msg + ") to " + str(user))
+		self._raw_client.send_message(mto=str(user), mbody=msg, mtype='chat')
 
 	def on_user_location_update(self, info):
 		self.user_locations[info['user']] = info['location']
