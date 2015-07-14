@@ -450,18 +450,11 @@ class FloatInput(TextInput):
 
 	def insert_text(self, substring, from_undo=False):
 		if substring == "-":
-			if self.cursor_col == 0 and "-" not in self.text:
-				pass
-			else:
+			if self.cursor_col != 0 or "-" in self.text:
 				substring = ""
-		elif self.cursor_col == 0 and "-" in self.text:
-			substring = ""
 		else:
 			str_type = type(substring)
-			if str_type is bytes:
-				int_pat = self._insert_int_patb
-			else:
-				int_pat = self._insert_int_patu
+			int_pat = self._insert_int_patu
 			if '.' in self.text:
 				substring = re.sub(int_pat, str_type(''), substring)
 			else:
