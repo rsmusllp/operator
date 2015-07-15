@@ -29,15 +29,18 @@ from kivy.app import App
 
 from third_party.kivy_toaster.src.toast.androidtoast import toast
 
-class MessageWidget(ScrollView):
+class MessageWidget(BoxLayout):
 	def __init__(self, *args, **kwargs):
 		super(MessageWidget, self).__init__(*args, **kwargs)
+		self.orientation = 'vertical'
+		self.master_layout = ScrollView(size_hint=(1, 1))
+		self.master_layout.bind(size=self.master_layout.setter('size'))
 		self.message_layout = GridLayout(cols=1, spacing=10, size_hint_y=None)
 		self.message_layout.bind(minimum_height=self.message_layout.setter('height'))
 		self.sub_layout = GridLayout(cols=1, spacing=10, size_hint_y=None)
 		self.sub_layout.bind(minimum_height=self.sub_layout.setter('height'))
 		bkgrnd_color = (0, 0, 0, 1)
-		self.set_background(self.message_layout, bkgrnd_color)
+		self.set_background(self, bkgrnd_color)
 		self.users = {}
 		self.logger = logging.getLogger("kivy.operator.widgets.messaging")
 		self.messages = {}
@@ -82,6 +85,7 @@ class MessageWidget(ScrollView):
 		"""
 		self.chatting = None
 		self.clear_widgets()
+		self.master_layout.clear_widgets()
 		self.message_layout.clear_widgets()
 		sub_layout = GridLayout(cols=1, spacing=10, size_hint_y=None)
 		sub_layout.bind(minimum_height=sub_layout.setter('height'))
@@ -96,7 +100,8 @@ class MessageWidget(ScrollView):
 		refresh = Button(text="Refresh Users", size_hint_y=None, on_release=lambda x: self.get_users(), height=100)
 		self.message_layout.add_widget(refresh)
 		self.message_layout.add_widget(sub_layout)
-		self.add_widget(self.message_layout)
+		self.master_layout.add_widget(self.message_layout)
+		self.add_widget(self.master_layout)
 
 	def on_message_receive(self, msg):
 		sender = str(msg['from']).strip()
@@ -105,6 +110,9 @@ class MessageWidget(ScrollView):
 
 		if self.chatting == chk_sender:
 			self.sub_layout.add_widget(Label(text=chk_sender + ": " + text, size_hint_y=None, height=80, halign='left'))
+			if self.new:
+				self.sub_layout.remove_widget(self.new_lab)
+				self.new = False
 		if sender in self.messages:
 			self.logger.info('receving new message from ' + sender)
 			self.messages[sender].append(text)
@@ -118,14 +126,15 @@ class MessageWidget(ScrollView):
 			self.names[name.split('@')[0]] = name
 		self.chatting = user
 		self.clear_widgets()
+		self.master_layout.clear_widgets()
 		self.message_layout.clear_widgets()
 		self.sub_layout.clear_widgets()
 		if user in self.names:
 			self.new = False
 			temp = self.messages[self.names[user]]
 			for msg in temp:
-				lab = Label(text=user + ": " + msg, size_hint_y=None, height=80, halign='left')
-				lab.bind(texture_size=lab.setter('size'))
+				lab = Label(text=user + ": " + msg, size_hint_y=None, size_hint_x=None, height=80, halign='left')
+				lab.bind(text_size=lab.size)
 				#lab.width = lab.texture_size[0]
 				self.sub_layout.add_widget(lab)
 				print(str(lab.pos))
@@ -153,10 +162,13 @@ class MessageWidget(ScrollView):
 		header.add_widget(back_btn)
 		header.add_widget(title)
 		header.add_widget(presence)
-		self.message_layout.add_widget(header)
+		#self.message_layout.add_widget(header)
 		self.message_layout.add_widget(self.sub_layout)
-		self.message_layout.add_widget(bottom)
-		self.add_widget(self.message_layout)
+		#self.message_layout.add_widget(bottom)
+		self.master_layout.add_widget(self.message_layout)
+		self.add_widget(header)
+		self.add_widget(self.master_layout)
+		self.add_widget(bottom)
 
 	def send_message(self, user, event):
 		recipient = self.users[user]
@@ -167,3 +179,4 @@ class MessageWidget(ScrollView):
 			self.reply.text = ""
 			if self.new:
 				self.sub_layout.remove_widget(self.new_lab)
+				self.new = False
