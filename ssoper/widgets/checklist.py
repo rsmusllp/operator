@@ -441,7 +441,6 @@ class ChecklistWidget(ScrollView):
 		self.clear_widgets()
 		self.do_get_checklists()
 
-
 class FloatInput(TextInput):
 	"""
 	Text field that restricts input to numbers. Allows a negative sign and a period.
@@ -449,7 +448,6 @@ class FloatInput(TextInput):
 	input_type = 'number'
 
 	def insert_text(self, substring, from_undo=False):
-		chars = []
 		if substring == "-":
 			if self.cursor_col != 0 or "-" in self.text:
 				substring = ""
