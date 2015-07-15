@@ -449,14 +449,15 @@ class FloatInput(TextInput):
 	input_type = 'number'
 
 	def insert_text(self, substring, from_undo=False):
+		chars = []
 		if substring == "-":
 			if self.cursor_col != 0 or "-" in self.text:
 				substring = ""
+		elif substring == ".":
+			if "." in self.text:
+				substring = ""
 		else:
 			str_type = type(substring)
-			int_pat = self._insert_int_patu
-			if '.' in self.text:
-				substring = re.sub(int_pat, str_type(''), substring)
-			else:
-				substring = '.'.join([re.sub(int_pat, str_type(''), k) for k in substring.split(str_type('.'), 1)])
+			char = substring.split(str_type('.'), 1)[0]
+			substring = '.'.join([re.sub(self._insert_int_patu, str_type(''), char)])
 		return super(FloatInput, self).insert_text(substring, from_undo=False)
