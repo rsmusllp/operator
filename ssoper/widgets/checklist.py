@@ -37,6 +37,7 @@ MONTHS = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'Augus
 ChecklistQuestion = collections.namedtuple('ChecklistQuestion', ('question', 'type', 'answer'))
 ChecklistResponse = collections.namedtuple('ChecklistResponse', ('question', 'label_widget', 'response_widget'))
 
+
 class ChecklistWidget(ScrollView):
 	screen_manager = ObjectProperty(None)
 	def __init__(self, *args, **kwargs):
@@ -360,7 +361,7 @@ class ChecklistWidget(ScrollView):
 		"""
 		questions = []
 		for question in json_data.get('questions', []):
-			if not 'question' in question:
+			if 'question' not in question:
 				continue
 			q_type = question.get('type', 'text')
 			q_answer = question.get('answer')
@@ -441,9 +442,19 @@ class ChecklistWidget(ScrollView):
 
 class FloatInput(TextInput):
 	"""
-	Text field that restricts input to numbers.
+	Text field that restricts input to numbers. Allows a negative sign and a period.
 	"""
-	pat = re.compile(r'-?[^0-9\.]')
+	input_type = 'number'
+
 	def insert_text(self, substring, from_undo=False):
-		s = re.sub(self.pat, '', substring)
-		return super(FloatInput, self).insert_text(s, from_undo=from_undo)
+		if substring == "-":
+			if self.cursor_col != 0 or "-" in self.text:
+				substring = ""
+		elif substring == ".":
+			if "." in self.text:
+				substring = ""
+		else:
+			str_type = type(substring)
+			char = substring.split(str_type('.'), 1)[0]
+			substring = '.'.join([re.sub(self._insert_int_patu, str_type(''), char)])
+		return super(FloatInput, self).insert_text(substring, from_undo=False)
