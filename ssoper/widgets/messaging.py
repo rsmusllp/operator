@@ -59,7 +59,7 @@ class MessageWidget(BoxLayout):
 		layout.bind(size=self._update_rect, pos=self._update_rect)
 
 		with layout.canvas.before:
-			Color(0, 0, 0, 1)
+			Color(1, 1, 1, 1)
 			self.rect = Rectangle(size=layout.size, pos=layout.pos)
 
 	def _update_rect(self, instance, value):
@@ -104,12 +104,31 @@ class MessageWidget(BoxLayout):
 		self.add_widget(self.master_layout)
 
 	def on_message_receive(self, msg):
+		def redraw(self, args):
+			self.bg_rect.size = self.size
+			self.bg_rect.pos = self.pos
+
 		sender = str(msg['from']).strip()
 		text = str(msg['body']).strip()
 		chk_sender = sender.split('@')[0]
 
 		if self.chatting == chk_sender:
-			self.sub_layout.add_widget(Label(text=chk_sender + ": " + text, size_hint_y=None, height=80, halign='left'))
+			lab = Label(text=chk_sender + ": " + text, color=(0, 0, 0, 1), size_hint_y=None, markup=True, halign='left')
+
+			lab.bind(width=lambda s, w:
+				s.setter('text_size')(s, (w, None)))
+			lab.bind(texture_size=lab.setter('size'))
+
+			with lab.canvas.before:
+				Color(0, 0, .75, mode='hsv')
+				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
+
+			lab.bind(pos=redraw, size=redraw)
+
+			print(str(lab.x) + ", " + str(lab.y))
+			print(lab.texture_size)
+			print(lab.text_size)
+			self.sub_layout.add_widget(lab)
 			if self.new:
 				self.sub_layout.remove_widget(self.new_lab)
 				self.new = False
@@ -133,16 +152,13 @@ class MessageWidget(BoxLayout):
 			self.new = False
 			temp = self.messages[self.names[user]]
 			for msg in temp:
-				lab = Label(text=user + ": " + msg, size_hint_y=None, size_hint_x=None, height=80, halign='left')
-				lab.bind(text_size=lab.size)
-				#lab.width = lab.texture_size[0]
+				lab = Label(text=user + ": " + msg, size_hint_y=None, markup=True, halign='left')
+				lab.bind(width=lambda s, w:
+					s.setter('text_size')(s, (w, None)))
+				lab.bind(texture_size=lab.setter('size'))
 				self.sub_layout.add_widget(lab)
-				print(str(lab.pos))
-				print(str(lab.size))
 		else:
-			self.new_lab = Label(text="Start a new conversation with " + user + "!")
-			print(str(self.new_lab.pos))
-			print(str(self.new_lab.size))
+			self.new_lab = Label(text="Start a new conversation with " + user + "!", color=(0,0,0,1))
 			with self.new_lab.canvas.before:
 				Rectangle(size=self.new_lab.size, pos=self.new_lab.pos)
 				Color(1, 0, 0)
@@ -157,7 +173,7 @@ class MessageWidget(BoxLayout):
 		bottom.add_widget(send)
 		header = BoxLayout(size_hint_y=None, height=80)
 		back_btn = Button(text='< Recent', size_hint_x=.3, on_release=lambda x: self.gen_menu())
-		title = Label(text=user, halign='left')
+		title = Label(text=user, halign='left', color=(0,0,0,1))
 		presence = Label(size_hint_x=.3)
 		header.add_widget(back_btn)
 		header.add_widget(title)
@@ -171,11 +187,23 @@ class MessageWidget(BoxLayout):
 		self.add_widget(bottom)
 
 	def send_message(self, user, event):
+		def redraw(self, args):
+			self.bg_rect.size = self.size
+			self.bg_rect.pos = self.pos
+
 		recipient = self.users[user]
 		msg = self.reply.text
 		if msg:
 			self.main_app.send_message(msg, user)
-			self.sub_layout.add_widget(Label(text=msg, size_hint_y=None, height=80, halign='right'))
+			lab = Label(text=msg, size_hint_y=None, color=(1, 1, 1, 1), markup=True, halign='right')
+			lab.bind(width=lambda s, w:
+				s.setter('text_size')(s, (w, None)))
+			lab.bind(texture_size=lab.setter('size'))
+			with lab.canvas.before:
+				Color(.67, .82, 1, mode='hsv')
+				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
+			lab.bind(pos=redraw, size=redraw)
+			self.sub_layout.add_widget(lab)
 			self.reply.text = ""
 			if self.new:
 				self.sub_layout.remove_widget(self.new_lab)
