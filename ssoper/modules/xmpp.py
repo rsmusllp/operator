@@ -41,15 +41,12 @@ class RawXMPPClient(sleekxmpp.ClientXMPP):
 		self.send_presence()
 		self.get_roster()
 		self['xep_0115'].update_caps()
-
-		"""
-		********** I HAVE NO IDEA WHY THIS WORKS - IT SHOULDN'T **********
-		"""
-
-		self['xep_0045'].joinMUC(self.room,
-										self.nick,
-										pfrom=self.jid,
-										wait=True)
+		self['xep_0045'].joinMUC(
+			self.room,
+			self.nick,
+			pfrom=self.jid,
+			wait=True
+		)
 		self['xep_0045'].configureRoom(self.room, ifrom=self.jid)
 
 
@@ -118,6 +115,9 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		self._raw_client['xep_0080'].publish_location(**kwargs)
 
 	def get_users(self):
+		"""
+		Get the roster from the XMPP object.
+		"""
 		names = []
 		roster = self._raw_client.get_roster()
 		root = ET.fromstring(str(roster))
@@ -170,38 +170,75 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 
 	@android.runnable.run_on_ui_thread
 	def on_xmpp_muc_receive(self, xmpp_msg):
-		if xmpp_msg['mucnick'] != self.nick and xmpp_msg['type'] in ('groupchat'):
+		if xmpp_msg['mucnick'] != self.nick and xmpp_msg['type'] in 'groupchat':
 			try:
 				self.dispatch('on_muc_receive', xmpp_msg)
 			except Exception:
 				self.logger.error('failed to dispatch the muc update', exc_info=True)
 
 	def on_message_receive(self, info):
+		"""
+		Handles when XMPP receives a message. Empty function that is overriden by children.
+
+		:param Message info: The message object handled by XMPP.
+		"""
 		self.messages.append(info)
 
 	def on_message_send(self, msg, user):
-		user = user + "@bt"
+		"""
+		Sends the message with the XMPP client handler.
+
+		:param str msg: The body of the message to send.
+		:param str user: The user to send the message to.
+		"""
 		self.logger.info("sending message to " + str(user))
 		self._raw_client.send_message(mto=str(user), mbody=msg, mtype='chat')
 
 	def on_muc_receive(self, msg):
+		"""
+		Handles when XMPP receives a groupmessage. Empty function that is overriden by children.
+
+		:param Message msg: The message object handled by XMPP.
+		"""
 		pass
 
 	def on_muc_send(self, msg, group):
+		"""
+		Sends the message with the XMPP client handler.
+
+		:param str msg: The body of the message to send.
+		:param str group: The group to send the message to.
+		"""
 		self.logger.info("sending group message to " + str(group))
 		self._raw_client.send_message(mto=group, mbody=msg, mtype='groupchat')
 
 	def on_user_location_update(self, info):
+		"""
+		Updates the location.
+
+		:param info: The XMPP data object.
+		"""
 		self.user_locations[info['user']] = info['location']
 		self.logger.info("user {0} location updated to {1}".format(info['user'], info['location']))
 
 	def on_user_mood_update(self, info):
+		"""
+		Updates the mood.
+
+		:param info: The XMPP data object.
+		"""
 		self.user_moods[info['user']] = info['mood']
 		self.logger.info("user {0} mood updated to {1}".format(info['user'], info['mood']))
 
 	def shutdown(self):
-		"""Perform any necessary clean up actions to close the XMPP connection."""
+		"""
+		Perform any necessary clean up actions to close the XMPP connection.
+		"""
 		self._raw_client.disconnect()
 
 	def muc_online(self, presence):
-		toast(presence['muc']['nick'] + " has come online", True)
+		"""
+		Toasts the user whenever another operator comes online.
+		"""
+		if presence['muc']['nick'] != self.nick:
+			toast(presence['muc']['nick'] + " has come online", True)

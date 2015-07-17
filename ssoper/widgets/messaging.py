@@ -5,14 +5,8 @@
 #
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
-import time
-import os
 import functools
 import logging
-
-import xml.etree.ElementTree as ET
-
-from jnius import autoclass
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -20,10 +14,7 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.anchorlayout import AnchorLayout
-from kivy.graphics import Color, Rectangle, Line
-from kivy.core.audio import SoundLoader
+from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 from kivy.app import App
 
@@ -44,12 +35,13 @@ class MessageWidget(BoxLayout):
 		self.users = {}
 		self.logger = logging.getLogger("kivy.operator.widgets.messaging")
 		self.messages = {}
-		Window.softinput_mode='pan'
+		Window.softinput_mode = 'pan'
 		self.chatting = None
 		self.reply = TextInput()
 		self.main_app = App.get_running_app()
-		self.group = None
 		self.gen_menu()
+		self.new_lab = Label()
+		self.new = False
 
 	def set_background(self, layout, color):
 		"""
@@ -69,21 +61,26 @@ class MessageWidget(BoxLayout):
 		"""
 		self.rect.pos = instance.pos
 		self.rect.size = instance.size
-		
+
 	def get_users(self):
+		"""
+		Pulls the list of users on the XMPP server.
+		"""
 		users = self.main_app.get_users()
 		self.users = {}
+
 		for user in users:
 			self.users[user.split('@')[0]] = user
+
 		self.users['Operator Group'] = 'operator@public.bt'
 		self.logger.info('updating user list')
+
 		if not self.chatting:
 			self.gen_menu()
 
 	def gen_menu(self):
 		"""
-		Checks to see if a notes file has ever been written. If so, it loads what has been previously saved.
-		If not, then it adjusts the text input accordingly.
+		Creates the base menu which displays all users.
 		"""
 		self.chatting = None
 		self.clear_widgets()
@@ -93,22 +90,49 @@ class MessageWidget(BoxLayout):
 		sub_layout.bind(minimum_height=sub_layout.setter('height'))
 		sub_layout.clear_widgets()
 		names = []
+
 		for user in self.users:
 			names.append(user)
+
 		names.sort()
-		for name in names:
-			lab = Button(text=name, size_hint_y=None, height=100, on_release=functools.partial(self.chat_panel, name))
-			sub_layout.add_widget(lab)
-		op_chat = Button(text='Group Chat: OPERATOR', size_hint_y=None, height=100, on_release=functools.partial(self.chat_panel, 'Operator Group'))
+		op_chat = Button(
+			text='Group Chat: OPERATOR',
+			size_hint_y=None,
+			height=100,
+			on_release=functools.partial(self.chat_panel, 'Operator Group')
+		)
 		sub_layout.add_widget(op_chat)
-		refresh = Button(text="Refresh Users", size_hint_y=None, on_release=lambda x: self.get_users(), height=100)
+
+		for name in names:
+			lab = Button(
+				text=name,
+				size_hint_y=None,
+				height=100,
+				on_release=functools.partial(self.chat_panel, name)
+			)
+			sub_layout.add_widget(lab)
+
+		refresh = Button(
+			text="Refresh Users",
+			size_hint_y=None,
+			on_release=lambda x: self.get_users(),
+			height=100
+		)
 		self.message_layout.add_widget(refresh)
 		self.message_layout.add_widget(sub_layout)
 		self.master_layout.add_widget(self.message_layout)
 		self.add_widget(self.master_layout)
 
 	def on_message_receive(self, msg):
+		"""
+		Whenever a message is received, it is processed according to whatever the user is currently doing.
+
+		:param Message msg: The XMPP message object.
+		"""
 		def redraw(self, args):
+			"""
+			Binds the size of the label background to the label size.
+			"""
 			self.bg_rect.size = self.size
 			self.bg_rect.pos = self.pos
 
@@ -117,21 +141,31 @@ class MessageWidget(BoxLayout):
 		chk_sender = sender.split('@')[0]
 
 		if self.chatting == chk_sender:
-			lab = Label(text=chk_sender + ": " + text, color=(0, 0, 0, 1), size_hint_y=None, markup=True, halign='left')
+			lab = Label(
+				text=chk_sender + ": " + text,
+				size_hint_y=None,
+				markup=True,
+				halign='left'
+			)
 
 			lab.bind(width=lambda s, w:
 				s.setter('text_size')(s, (w, None)))
 			lab.bind(texture_size=lab.setter('size'))
 
+			with lab.canvas:
+				Color(self.name_to_txt(chk_sender), 1, 1, mode='hsv')
+
 			with lab.canvas.before:
-				Color(0, 0, .75, mode='hsv')
+				Color(self.name_to_bg(chk_sender), 1, 1, mode='hsv')
 				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
 			lab.bind(pos=redraw, size=redraw)
 			self.sub_layout.add_widget(lab)
+
 			if self.new:
 				self.sub_layout.remove_widget(self.new_lab)
 				self.new = False
+
 		if sender.split('/')[0] in self.messages:
 			self.logger.info('receving new message from ' + sender)
 			self.messages[sender.split('/')[0]].append([sender.split('@')[0], text])
@@ -140,33 +174,52 @@ class MessageWidget(BoxLayout):
 			self.messages[sender.split('/')[0]] = [[sender.split('@')[0], text]]
 
 	def on_muc_receive(self, msg):
+		"""
+		Whenever a group message is received, it is processed according to whatever the user is
+		currently doing.
+
+		:param Message msg: The XMPP message object.
+		"""
 		def redraw(self, args):
+			"""
+			Binds the size of the label background to the label size.
+			"""
 			self.bg_rect.size = self.size
 			self.bg_rect.pos = self.pos
+
 		sender = str(msg['from']).strip()
 		text = str(msg['body']).strip()
-		if self.chatting == "Operator Group":
-			print(sender)
 
-			lab = Label(text=sender.split('/')[1] + ": " + text, color=(0, 0, 0, 1), size_hint_y=None, markup=True, halign='left')
+		if self.chatting == "Operator Group":
+
+			lab = Label(
+				text=sender.split('/')[1] + ": " + text,
+				size_hint_y=None,
+				markup=True,
+				halign='left'
+			)
 
 			lab.bind(width=lambda s, w:
 				s.setter('text_size')(s, (w, None)))
 			lab.bind(texture_size=lab.setter('size'))
 
+			with lab.canvas.after:
+				Color(self.name_to_txt(sender.split('/')[1]), 1, 1, mode='hsv')
+
 			with lab.canvas.before:
-				Color(0, 0, .75, mode='hsv')
+				Color(self.name_to_bg(sender.split('/')[1]), 1, 1, mode='hsv')
 				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
 			lab.bind(pos=redraw, size=redraw)
 			self.sub_layout.add_widget(lab)
+
 			if self.new:
 				self.sub_layout.remove_widget(self.new_lab)
 				self.new = False
-			self.group = sender
+
 		else:
 			toast(sender.split('/')[1] + ": " + text, True)
-		#sender = sender.split('/')[0]
+
 		if sender.split('/')[0] in self.messages:
 			self.logger.info('receving new message from ' + sender)
 			self.messages[sender.split('/')[0]].append([sender.split('/')[1], text])
@@ -175,48 +228,84 @@ class MessageWidget(BoxLayout):
 			self.messages[sender.split('/')[0]] = [[sender.split('/')[1], text]]
 
 	def chat_panel(self, user, event):
+		"""
+		Creates the actual chat screen where the messages are displayed and where the user can respond.
+
+		:param str user: The username of whomever the user is chatting with.
+		"""
 		def redraw(self, args):
+			"""
+			Binds the size of the label background to the label size.
+			"""
 			self.bg_rect.size = self.size
 			self.bg_rect.pos = self.pos
 
 		full_name = self.users[user]
 		self.chatting = user
-		for name in self.messages.items():
-			print name
 		self.clear_widgets()
 		self.master_layout.clear_widgets()
 		self.message_layout.clear_widgets()
 		self.sub_layout.clear_widgets()
-		print(full_name)
-		print(user)
+
 		if full_name in self.messages:
 			self.new = False
 			temp = self.messages[full_name]
 			for msg in temp:
-				lab = Label(text=msg[0] + ": " + msg[1], color=(0, 0, 0, 1), size_hint_y=None, markup=True, halign='left')
-				lab.bind(width=lambda s, w:
-					s.setter('text_size')(s, (w, None)))
-				lab.bind(texture_size=lab.setter('size'))
-				with lab.canvas.before:
-					Color(0, 0, .75, mode='hsv')
-					lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
-				lab.bind(pos=redraw, size=redraw)
-				self.sub_layout.add_widget(lab)
+
+				if not msg[0]:
+					lab = Label(
+						text=msg[1],
+						color=(1, 1, 1, 1),
+						size_hint_y=None,
+						markup=True,
+						halign='right'
+					)
+
+					lab.bind(width=lambda s, w:
+						s.setter('text_size')(s, (w, None)))
+					lab.bind(texture_size=lab.setter('size'))
+
+					with lab.canvas.before:
+						Color(.67, .82, 1, mode='hsv')
+						lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
+
+					lab.bind(pos=redraw, size=redraw)
+					self.sub_layout.add_widget(lab)
+				else:
+					lab = Label(
+						text=msg[0] + ": " + msg[1],
+						color=(0, 0, 0, 1),
+						size_hint_y=None,
+						markup=True,
+						halign='left'
+					)
+
+					lab.bind(width=lambda s, w:
+						s.setter('text_size')(s, (w, None)))
+					lab.bind(texture_size=lab.setter('size'))
+
+					with lab.canvas.before:
+						Color(0, 0, .75, mode='hsv')
+						lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
+
+					lab.bind(pos=redraw, size=redraw)
+					self.sub_layout.add_widget(lab)
+
 		else:
-			self.new_lab = Label(text="Start a new conversation with " + user + "!", color=(0,0,0,1))
-			with self.new_lab.canvas.before:
-				Rectangle(size=self.new_lab.size, pos=self.new_lab.pos)
-				Color(1, 0, 0)
-				#Line(rectangle =(self.new_lab.x+1,self.new_lab.y+1,self.new_lab.width-1,self.new_lab.height-1))
-				#Color(1, 1, 1)
+			self.new_lab = Label(text="Start a new conversation with " + user + "!", color=(0, 0, 0, 1)
+			)
 			self.new = True
 			self.sub_layout.add_widget(self.new_lab)
+
 		bottom = BoxLayout(size_hint_y=None, height=80)
 		self.reply = TextInput(hint_text="Write a message...")
-		title = Label(text=user, halign='left', color=(0,0,0,1))
-		if user == 'Operator Group':
-			user = self.group
-		send = Button(text="Send", size_hint_x=.2, on_release=functools.partial(self.send_message, full_name))
+		title = Label(text=user, halign='left', color=(0, 0, 0, 1))
+
+		send = Button(
+			text="Send",
+			size_hint_x=.2,
+			on_release=functools.partial(self.send_message, full_name)
+		)
 		bottom.add_widget(self.reply)
 		bottom.add_widget(send)
 		header = BoxLayout(size_hint_y=None, height=80)
@@ -225,36 +314,95 @@ class MessageWidget(BoxLayout):
 		header.add_widget(back_btn)
 		header.add_widget(title)
 		header.add_widget(presence)
-		#self.message_layout.add_widget(header)
 		self.message_layout.add_widget(self.sub_layout)
-		#self.message_layout.add_widget(bottom)
 		self.master_layout.add_widget(self.message_layout)
 		self.add_widget(header)
 		self.add_widget(self.master_layout)
 		self.add_widget(bottom)
 
 	def send_message(self, user, event):
+		"""
+		When the user hits the reply button, it sends the message back to the user (or group if it is
+		a groupchat).
+
+		:param str user: The username of whomever the user is chatting with.
+		"""
 		def redraw(self, args):
+			"""
+			Binds the size of the label background to the label size.
+			"""
 			self.bg_rect.size = self.size
 			self.bg_rect.pos = self.pos
 
-		#recipient = self.users[user]
 		msg = self.reply.text
+
 		if msg:
-			if user == self.group.split('/')[0]:
+
+			if user == self.users['Operator Group']:
 				self.main_app.send_muc(msg, user)
 			else:
 				self.main_app.send_message(msg, user)
+
+			if user in self.messages:
+				self.messages[user].append([None, msg])
+			else:
+				self.messages[user] = [[None, msg]]
+
 			lab = Label(text=msg, size_hint_y=None, color=(1, 1, 1, 1), markup=True, halign='right')
 			lab.bind(width=lambda s, w:
 				s.setter('text_size')(s, (w, None)))
 			lab.bind(texture_size=lab.setter('size'))
+
 			with lab.canvas.before:
 				Color(.67, .82, 1, mode='hsv')
 				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
+
 			lab.bind(pos=redraw, size=redraw)
 			self.sub_layout.add_widget(lab)
 			self.reply.text = ""
+
 			if self.new:
 				self.sub_layout.remove_widget(self.new_lab)
 				self.new = False
+
+	def name_to_bg(self, data):
+		is_str = lambda obj: issubclass(obj.__class__, str)
+		poly = 0x1021
+		reg = 0x0000
+
+		if is_str(data):
+			data = list(map(ord, data))
+		elif is_bytes(data):
+			data = list(data)
+
+		data.append(0)
+		data.append(0)
+
+		for byte in data:
+			mask = 0x80
+			while mask > 0:
+				reg <<= 1
+				if byte & mask:
+					reg += 1
+				mask >>= 1
+				if reg > 0xffff:
+					reg &= 0xffff
+					reg ^= poly
+
+		print(reg)
+		rem = reg % 360
+		print(rem)
+		rem = float(rem)
+		rem = rem/360
+		print(rem)
+		return rem
+
+	def name_to_txt(self, data):
+		rem = self.name_to_bg(data)
+		dis = rem + 0.5
+
+		if dis > 1:
+			dis = dis - 1
+
+		print(dis)
+		return dis
