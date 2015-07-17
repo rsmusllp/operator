@@ -50,6 +50,7 @@ class MainApp(App):
 		self.messaging = self.root.ids.message_menu
 		self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
 		self.xmpp_client.bind(on_message_receive=self.on_message_receive)
+		self.xmpp_client.bind(on_muc_receive=self.on_muc_receive)
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
 
@@ -84,6 +85,9 @@ class MainApp(App):
 	def on_message_receive(self, event, msg):
 		self.messaging.on_message_receive(msg)
 
+	def on_muc_receive(self, event, msg):
+		self.messaging.on_muc_receive(msg)
+
 	def on_gps_location(self, **kwargs):
 		# kwargs on Galaxy S5 contain:
 		#   altitude, bearing, lat, lon, speed
@@ -108,6 +112,9 @@ class MainApp(App):
 
 	def send_message(self, msg, user):
 		self.xmpp_client.on_message_send(msg, user)
+
+	def send_muc(self, msg, group):
+		self.xmpp_client.on_muc_send(msg, group)
 
 	def on_pause(self):
 		return False

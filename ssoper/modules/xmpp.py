@@ -13,14 +13,17 @@ import sleekxmpp
 
 import xml.etree.ElementTree as ET
 
+from third_party.kivy_toaster.src.toast.androidtoast import toast
+
 class RawXMPPClient(sleekxmpp.ClientXMPP):
 	"""The raw XMPP connection."""
-	def __init__(self, jid, password):
+	def __init__(self, jid, password, room, nick):
 		super(RawXMPPClient, self).__init__(jid, password)
 		self.logger = logging.getLogger('kivy.operator.xmpp.raw_client')
 		self.add_event_handler('session_start', self._on_session_start, threaded=True)
 
 		self.register_plugin('xep_0004')
+		self.register_plugin('xep_0045')
 		self.register_plugin('xep_0030')
 		self.register_plugin('xep_0060')
 		self.register_plugin('xep_0080')
@@ -30,11 +33,24 @@ class RawXMPPClient(sleekxmpp.ClientXMPP):
 		self.register_plugin('xep_0163')
 		self.register_plugin('xep_0199')
 
+		self.room = room
+		self.nick = nick
+
 	def _on_session_start(self, event):
 		self.logger.info('xmpp session started')
 		self.send_presence()
 		self.get_roster()
 		self['xep_0115'].update_caps()
+
+		"""
+		********** I HAVE NO IDEA WHY THIS WORKS - IT SHOULDN'T **********
+		"""
+
+		self['xep_0045'].joinMUC(self.room,
+										self.nick,
+										pfrom=self.jid,
+										wait=True)
+		self['xep_0045'].configureRoom(self.room, ifrom=self.jid)
 
 
 class OperatorXMPPClient(kivy.event.EventDispatcher):
@@ -53,14 +69,22 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		self.register_event_type('on_user_location_update')
 		self.register_event_type('on_user_mood_update')
 		self.register_event_type('on_message_receive')
+		self.register_event_type('on_muc_receive')
+
+		self.room = "operator@public.bt"
 
 		self.messages = []
 
 		self.jid = username + '/operator'
-		self._raw_client = RawXMPPClient(self.jid, password)
+		self.nick = username.split('@')[0]
+
+		self._raw_client = RawXMPPClient(self.jid, password, self.room, self.nick)
 		self._raw_client.add_event_handler('user_location_publish', self.on_xmpp_user_location_publish)
 		self._raw_client.add_event_handler('user_mood_publish', self.on_xmpp_user_mood_publish)
 		self._raw_client.add_event_handler('message', self.on_xmpp_message_receive)
+		self._raw_client.add_event_handler("muc::%s::got_online" % self.room, self.muc_online)
+		self._raw_client.add_event_handler("groupchat_message", self.on_xmpp_muc_receive)
+
 		if self._raw_client.connect(server):
 			self.logger.info("connected to xmpp server {0} {1}:{2}".format(self.jid, server[0], server[1]))
 		self._raw_client.process()
@@ -144,6 +168,14 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 			except Exception:
 				self.logger.error('failed to dispatch the message update', exc_info=True)
 
+	@android.runnable.run_on_ui_thread
+	def on_xmpp_muc_receive(self, xmpp_msg):
+		if xmpp_msg['mucnick'] != self.nick and xmpp_msg['type'] in ('groupchat'):
+			try:
+				self.dispatch('on_muc_receive', xmpp_msg)
+			except Exception:
+				self.logger.error('failed to dispatch the muc update', exc_info=True)
+
 	def on_message_receive(self, info):
 		self.messages.append(info)
 
@@ -151,6 +183,13 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		user = user + "@bt"
 		self.logger.info("sending message to " + str(user))
 		self._raw_client.send_message(mto=str(user), mbody=msg, mtype='chat')
+
+	def on_muc_receive(self, msg):
+		pass
+
+	def on_muc_send(self, msg, group):
+		self.logger.info("sending group message to " + str(group))
+		self._raw_client.send_message(mto=group, mbody=msg, mtype='groupchat')
 
 	def on_user_location_update(self, info):
 		self.user_locations[info['user']] = info['location']
@@ -163,3 +202,6 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 	def shutdown(self):
 		"""Perform any necessary clean up actions to close the XMPP connection."""
 		self._raw_client.disconnect()
+
+	def muc_online(self, presence):
+		toast(presence['muc']['nick'] + " has come online", True)
