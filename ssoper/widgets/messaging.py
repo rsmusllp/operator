@@ -7,6 +7,7 @@
 
 import functools
 import logging
+import colorsys
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -152,8 +153,7 @@ class MessageWidget(BoxLayout):
 				s.setter('text_size')(s, (w, None)))
 			lab.bind(texture_size=lab.setter('size'))
 
-			with lab.canvas:
-				Color(self.name_to_txt(chk_sender), 1, 1, mode='hsv')
+			lab.color = colorsys.hsv_to_rgb(self.name_to_txt(chk_sender), 1, 1)
 
 			with lab.canvas.before:
 				Color(self.name_to_bg(chk_sender), 1, 1, mode='hsv')
@@ -203,8 +203,7 @@ class MessageWidget(BoxLayout):
 				s.setter('text_size')(s, (w, None)))
 			lab.bind(texture_size=lab.setter('size'))
 
-			with lab.canvas.after:
-				Color(self.name_to_txt(sender.split('/')[1]), 1, 1, mode='hsv')
+			lab.color = colorsys.hsv_to_rgb(self.name_to_txt(sender.split('/')[1]), 1, 1)
 
 			with lab.canvas.before:
 				Color(self.name_to_bg(sender.split('/')[1]), 1, 1, mode='hsv')
@@ -284,8 +283,10 @@ class MessageWidget(BoxLayout):
 						s.setter('text_size')(s, (w, None)))
 					lab.bind(texture_size=lab.setter('size'))
 
+					lab.color = colorsys.hsv_to_rgb(self.name_to_txt(msg[0]), 1, 1)
+
 					with lab.canvas.before:
-						Color(0, 0, .75, mode='hsv')
+						Color(self.name_to_bg(msg[0]), 1, 1, mode='hsv')
 						lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
 					lab.bind(pos=redraw, size=redraw)
@@ -366,6 +367,11 @@ class MessageWidget(BoxLayout):
 				self.new = False
 
 	def name_to_bg(self, data):
+		"""
+		Converts a string into a CRC code which is converted into a seemingly random color.
+
+		:param str data: String to convert into a color.
+		"""
 		is_str = lambda obj: issubclass(obj.__class__, str)
 		poly = 0x1021
 		reg = 0x0000
@@ -389,20 +395,21 @@ class MessageWidget(BoxLayout):
 					reg &= 0xffff
 					reg ^= poly
 
-		print(reg)
 		rem = reg % 360
-		print(rem)
 		rem = float(rem)
 		rem = rem/360
-		print(rem)
 		return rem
 
 	def name_to_txt(self, data):
+		"""
+		Finds the corresponding text color to the background color.
+
+		:param str data: The same string that is used for the background color.
+		"""
 		rem = self.name_to_bg(data)
 		dis = rem + 0.5
 
 		if dis > 1:
 			dis = dis - 1
 
-		print(dis)
 		return dis
