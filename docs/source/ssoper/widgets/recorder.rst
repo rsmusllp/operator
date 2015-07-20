@@ -7,7 +7,7 @@
 Classes
 -------
 
-.. autoclass:: ssoper.widgets.recorder.RecordingWidget
+.. autoclass:: ssoper.widgets.recorder.RecorderWidget
    :show-inheritance:
    :members:
    :special-members: __init__

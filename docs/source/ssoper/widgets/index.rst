@@ -12,3 +12,4 @@ The ssoper.widgets Package
    root.rst
    soundboard.rst
    recorder.rst
+   messaging.rst

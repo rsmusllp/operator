@@ -11,6 +11,7 @@ Operator Documentation
    :numbered:
 
    ssoper/index.rst
+   build.rst
 
 
 Indices and tables
