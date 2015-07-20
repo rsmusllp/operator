@@ -29,6 +29,16 @@ To install Buildozer, follow `these instructions <http://buildozer.readthedocs.o
 
 Buildozer relies on a buildozer.init file which contains instructions for the overall characteristics of the application, such as dependencies and orientation. On the Operator repository there will always be an updated buildozer.init, meaning when invoking buildozer it should always be from the main directory of operator (where the init is located).
 
+Furthermore, an updated Android SDK is necessary for Buildozer to run correctly. It will install the SDK automatically on the first run, but it won't succeed until you manually update and install the necessary components from the SDK manager. The manager is located in your home directory at "/.buildozer/android/platform/android-sdk-21/tools/android".
+
+The necessary packages are::
+
+	Tools/Android SDK Tools
+	Tools/Android SDK Platform-tools
+	Android 4.0 (API 14)/SDK Platform
+	Android 2.2 (API 8)/SDK Platform
+	Android 2.2 (API 8)/Google APIs
+
 Although there are some nice simple commands that Buildozer can handle that automates a lot of the process, on some systems it is unreliable due to the nature of ADB servers. It is worth trying the command::
 	
 	buildozer -v android debug deploy run logcat 
