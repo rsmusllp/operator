@@ -44,7 +44,8 @@ class MainApp(App):
 		self.xmpp_client = OperatorXMPPClient(
 			sz_utils.parse_server(self.config.get('xmpp', 'server'), 5222),
 			self.config.get('xmpp', 'username'),
-			self.config.get('xmpp', 'password')
+			self.config.get('xmpp', 'password'),
+			self.config.get('xmpp', 'room')
 		)
 		self.map = self.root.ids.map_panel_widget.ids.map_widget
 		self.messaging = self.root.ids.message_menu

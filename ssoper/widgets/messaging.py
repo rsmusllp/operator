@@ -8,6 +8,7 @@
 import functools
 import logging
 import colorsys
+from collections import defaultdict
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -36,7 +37,7 @@ class MessageWidget(BoxLayout):
 		self.set_background(self, bkgrnd_color)
 		self.users = {}
 		self.logger = logging.getLogger("kivy.operator.widgets.messaging")
-		self.messages = {}
+		self.messages = defaultdict(list)
 		Window.softinput_mode = 'pan'
 		self.chatting = None
 		self.reply = TextInput()
@@ -63,6 +64,13 @@ class MessageWidget(BoxLayout):
 		"""
 		self.rect.pos = instance.pos
 		self.rect.size = instance.size
+
+	def redraw(self, event, args):
+		"""
+		Binds the size of the label background to the label size.
+		"""
+		event.bg_rect.size = event.size
+		event.bg_rect.pos = event.pos
 
 	def get_users(self):
 		"""
@@ -131,13 +139,6 @@ class MessageWidget(BoxLayout):
 
 		:param Message msg: The XMPP message object.
 		"""
-		def redraw(self, args):
-			"""
-			Binds the size of the label background to the label size.
-			"""
-			self.bg_rect.size = self.size
-			self.bg_rect.pos = self.pos
-
 		sender = str(msg['from']).strip()
 		text = str(msg['body']).strip()
 		chk_sender = sender.split('@')[0]
@@ -159,7 +160,7 @@ class MessageWidget(BoxLayout):
 				Color(name_to_bg(chk_sender), 1, 1, mode='hsv')
 				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
-			lab.bind(pos=redraw, size=redraw)
+			lab.bind(pos=self.redraw, size=self.redraw)
 			self.sub_layout.add_widget(lab)
 
 			if self.new:
@@ -167,11 +168,11 @@ class MessageWidget(BoxLayout):
 				self.new = False
 
 		if sender.split('/')[0] in self.messages:
-			self.main_app.xmpp_log('info', 'receving new message from ' + sender)
-			self.messages[sender.split('/')[0]].append([sender.split('@')[0], text])
+			self.main_app.xmpp_log('info', 'receiving new message from ' + sender)
 		else:
-			self.main_app.xmpp_log('info', 'receving first message from ' + sender)
-			self.messages[sender.split('/')[0]] = [[sender.split('@')[0], text]]
+			self.main_app.xmpp_log('info', 'receiving first message from ' + sender)
+
+		self.messages[sender.split('/')[0]].append([sender.split('@')[0], text])
 
 	def on_muc_receive(self, msg):
 		"""
@@ -180,13 +181,6 @@ class MessageWidget(BoxLayout):
 
 		:param Message msg: The XMPP message object.
 		"""
-		def redraw(self, args):
-			"""
-			Binds the size of the label background to the label size.
-			"""
-			self.bg_rect.size = self.size
-			self.bg_rect.pos = self.pos
-
 		sender = str(msg['from']).strip()
 		text = str(msg['body']).strip()
 
@@ -207,7 +201,7 @@ class MessageWidget(BoxLayout):
 				Color(name_to_bg(sender.split('/')[1]), 1, 1, mode='hsv')
 				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
-			lab.bind(pos=redraw, size=redraw)
+			lab.bind(pos=self.redraw, size=self.redraw)
 			self.sub_layout.add_widget(lab)
 
 			if self.new:
@@ -218,11 +212,11 @@ class MessageWidget(BoxLayout):
 			toast(sender.split('/')[1] + ": " + text, True)
 
 		if sender.split('/')[0] in self.messages:
-			self.main_app.xmpp_log('info', 'receving new message from ' + sender)
-			self.messages[sender.split('/')[0]].append([sender.split('/')[1], text])
+			self.main_app.xmpp_log('info', 'receiving new message from ' + sender)
 		else:
-			self.main_app.xmpp_log('info', 'receving first message from ' + sender)
-			self.messages[sender.split('/')[0]] = [[sender.split('/')[1], text]]
+			self.main_app.xmpp_log('info', 'receiving first message from ' + sender)
+		
+		self.messages[sender.split('/')[0]].append([sender.split('/')[1], text])
 
 	def chat_panel(self, user, event):
 		"""
@@ -230,12 +224,6 @@ class MessageWidget(BoxLayout):
 
 		:param str user: The username of whomever the user is chatting with.
 		"""
-		def redraw(self, args):
-			"""
-			Binds the size of the label background to the label size.
-			"""
-			self.bg_rect.size = self.size
-			self.bg_rect.pos = self.pos
 
 		full_name = self.users[user]
 		self.chatting = user
@@ -277,7 +265,7 @@ class MessageWidget(BoxLayout):
 
 				lab.bind(width=lambda s, w: s.setter('text_size')(s, (w, None)))
 				lab.bind(texture_size=lab.setter('size'))
-				lab.bind(pos=redraw, size=redraw)
+				lab.bind(pos=self.redraw, size=self.redraw)
 				self.sub_layout.add_widget(lab)
 
 		else:
@@ -315,13 +303,6 @@ class MessageWidget(BoxLayout):
 
 		:param str user: The username of whomever the user is chatting with.
 		"""
-		def redraw(self, args):
-			"""
-			Binds the size of the label background to the label size.
-			"""
-			self.bg_rect.size = self.size
-			self.bg_rect.pos = self.pos
-
 		msg = self.reply.text
 
 		if msg:
@@ -343,7 +324,7 @@ class MessageWidget(BoxLayout):
 				Color(.67, .82, 1, mode='hsv')
 				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
-			lab.bind(pos=redraw, size=redraw)
+			lab.bind(pos=self.redraw, size=self.redraw)
 			self.sub_layout.add_widget(lab)
 			self.reply.text = ""
 

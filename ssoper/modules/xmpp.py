@@ -55,7 +55,7 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 	The class which manages the :py:class:`.RawXMPPClient` and provides the XMPP
 	API to the rest of the application.
 	"""
-	def __init__(self, server, username, password):
+	def __init__(self, server, username, password, room):
 		"""
 		:param tuple server: The server and port to connect to as a tuple.
 		:param str username: The username of the jid, including the XMPP domain.
@@ -68,7 +68,7 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		self.register_event_type('on_message_receive')
 		self.register_event_type('on_muc_receive')
 
-		self.room = "operator@public.bt"
+		self.room = room
 
 		self.messages = []
 
