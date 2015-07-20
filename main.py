@@ -143,6 +143,10 @@ class MainApp(App):
 		)
 		self.user_location_markers[user] = marker
 
+	def xmpp_log(self, log_type, log):
+		if log_type == 'info':
+			self.xmpp_client.logger.info(log)
+
 if __name__ == '__main__':
 	logging.captureWarnings(True)
 	MainApp().run()

@@ -123,9 +123,9 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		root = ET.fromstring(str(roster))
 		for child in root:
 			for children in child:
-				for chillen in children.items():
-					if chillen[0] == 'jid':
-						names.append(chillen[1])
+				for children_object in children.items():
+					if children_object[0] == 'jid':
+						names.append(children_object[1])
 		self.users = names
 		return names
 

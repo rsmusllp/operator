@@ -20,6 +20,7 @@ from kivy.core.window import Window
 from kivy.app import App
 
 from third_party.kivy_toaster.src.toast.androidtoast import toast
+from ssoper.utilities.colors import name_to_bg
 
 class MessageWidget(BoxLayout):
 	def __init__(self, *args, **kwargs):
@@ -74,7 +75,7 @@ class MessageWidget(BoxLayout):
 			self.users[user.split('@')[0]] = user
 
 		self.users['Operator Group'] = 'operator@public.bt'
-		self.logger.info('updating user list')
+		self.main_app.xmpp_log('info', 'updating user list')
 
 		if not self.chatting:
 			self.gen_menu()
@@ -149,14 +150,13 @@ class MessageWidget(BoxLayout):
 				halign='left'
 			)
 
-			lab.bind(width=lambda s, w:
-				s.setter('text_size')(s, (w, None)))
+			lab.bind(width=lambda s, w: s.setter('text_size')(s, (w, None)))
 			lab.bind(texture_size=lab.setter('size'))
 
 			lab.color = colorsys.hsv_to_rgb(self.name_to_txt(chk_sender), 1, 1)
 
 			with lab.canvas.before:
-				Color(self.name_to_bg(chk_sender), 1, 1, mode='hsv')
+				Color(name_to_bg(chk_sender), 1, 1, mode='hsv')
 				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
 			lab.bind(pos=redraw, size=redraw)
@@ -167,10 +167,10 @@ class MessageWidget(BoxLayout):
 				self.new = False
 
 		if sender.split('/')[0] in self.messages:
-			self.logger.info('receving new message from ' + sender)
+			self.main_app.xmpp_log('info', 'receving new message from ' + sender)
 			self.messages[sender.split('/')[0]].append([sender.split('@')[0], text])
 		else:
-			self.logger.info('receving first message from ' + sender)
+			self.main_app.xmpp_log('info', 'receving first message from ' + sender)
 			self.messages[sender.split('/')[0]] = [[sender.split('@')[0], text]]
 
 	def on_muc_receive(self, msg):
@@ -191,7 +191,6 @@ class MessageWidget(BoxLayout):
 		text = str(msg['body']).strip()
 
 		if self.chatting == "Operator Group":
-
 			lab = Label(
 				text=sender.split('/')[1] + ": " + text,
 				size_hint_y=None,
@@ -199,14 +198,13 @@ class MessageWidget(BoxLayout):
 				halign='left'
 			)
 
-			lab.bind(width=lambda s, w:
-				s.setter('text_size')(s, (w, None)))
+			lab.bind(width=lambda s, w: s.setter('text_size')(s, (w, None)))
 			lab.bind(texture_size=lab.setter('size'))
 
 			lab.color = colorsys.hsv_to_rgb(self.name_to_txt(sender.split('/')[1]), 1, 1)
 
 			with lab.canvas.before:
-				Color(self.name_to_bg(sender.split('/')[1]), 1, 1, mode='hsv')
+				Color(name_to_bg(sender.split('/')[1]), 1, 1, mode='hsv')
 				lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
 			lab.bind(pos=redraw, size=redraw)
@@ -220,10 +218,10 @@ class MessageWidget(BoxLayout):
 			toast(sender.split('/')[1] + ": " + text, True)
 
 		if sender.split('/')[0] in self.messages:
-			self.logger.info('receving new message from ' + sender)
+			self.main_app.xmpp_log('info', 'receving new message from ' + sender)
 			self.messages[sender.split('/')[0]].append([sender.split('/')[1], text])
 		else:
-			self.logger.info('receving first message from ' + sender)
+			self.main_app.xmpp_log('info', 'receving first message from ' + sender)
 			self.messages[sender.split('/')[0]] = [[sender.split('/')[1], text]]
 
 	def chat_panel(self, user, event):
@@ -250,7 +248,6 @@ class MessageWidget(BoxLayout):
 			self.new = False
 			temp = self.messages[full_name]
 			for msg in temp:
-
 				if not msg[0]:
 					lab = Label(
 						text=msg[1],
@@ -260,16 +257,10 @@ class MessageWidget(BoxLayout):
 						halign='right'
 					)
 
-					lab.bind(width=lambda s, w:
-						s.setter('text_size')(s, (w, None)))
-					lab.bind(texture_size=lab.setter('size'))
-
 					with lab.canvas.before:
 						Color(.67, .82, 1, mode='hsv')
 						lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
-					lab.bind(pos=redraw, size=redraw)
-					self.sub_layout.add_widget(lab)
 				else:
 					lab = Label(
 						text=msg[0] + ": " + msg[1],
@@ -278,23 +269,19 @@ class MessageWidget(BoxLayout):
 						markup=True,
 						halign='left'
 					)
-
-					lab.bind(width=lambda s, w:
-						s.setter('text_size')(s, (w, None)))
-					lab.bind(texture_size=lab.setter('size'))
-
 					lab.color = colorsys.hsv_to_rgb(self.name_to_txt(msg[0]), 1, 1)
 
 					with lab.canvas.before:
-						Color(self.name_to_bg(msg[0]), 1, 1, mode='hsv')
+						Color(name_to_bg(msg[0]), 1, 1, mode='hsv')
 						lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
-					lab.bind(pos=redraw, size=redraw)
-					self.sub_layout.add_widget(lab)
+				lab.bind(width=lambda s, w: s.setter('text_size')(s, (w, None)))
+				lab.bind(texture_size=lab.setter('size'))
+				lab.bind(pos=redraw, size=redraw)
+				self.sub_layout.add_widget(lab)
 
 		else:
-			self.new_lab = Label(text="Start a new conversation with " + user + "!", color=(0, 0, 0, 1)
-			)
+			self.new_lab = Label(text="Start a new conversation with " + user + "!", color=(0, 0, 0, 1))
 			self.new = True
 			self.sub_layout.add_widget(self.new_lab)
 
@@ -338,7 +325,6 @@ class MessageWidget(BoxLayout):
 		msg = self.reply.text
 
 		if msg:
-
 			if user == self.users['Operator Group']:
 				self.main_app.send_muc(msg, user)
 			else:
@@ -350,8 +336,7 @@ class MessageWidget(BoxLayout):
 				self.messages[user] = [[None, msg]]
 
 			lab = Label(text=msg, size_hint_y=None, color=(1, 1, 1, 1), markup=True, halign='right')
-			lab.bind(width=lambda s, w:
-				s.setter('text_size')(s, (w, None)))
+			lab.bind(width=lambda s, w: s.setter('text_size')(s, (w, None)))
 			lab.bind(texture_size=lab.setter('size'))
 
 			with lab.canvas.before:
@@ -366,47 +351,13 @@ class MessageWidget(BoxLayout):
 				self.sub_layout.remove_widget(self.new_lab)
 				self.new = False
 
-	def name_to_bg(self, data):
-		"""
-		Converts a string into a CRC code which is converted into a seemingly random color.
-
-		:param str data: String to convert into a color.
-		"""
-		is_str = lambda obj: issubclass(obj.__class__, str)
-		poly = 0x1021
-		reg = 0x0000
-
-		if is_str(data):
-			data = list(map(ord, data))
-		elif is_bytes(data):
-			data = list(data)
-
-		data.append(0)
-		data.append(0)
-
-		for byte in data:
-			mask = 0x80
-			while mask > 0:
-				reg <<= 1
-				if byte & mask:
-					reg += 1
-				mask >>= 1
-				if reg > 0xffff:
-					reg &= 0xffff
-					reg ^= poly
-
-		rem = reg % 360
-		rem = float(rem)
-		rem = rem/360
-		return rem
-
 	def name_to_txt(self, data):
 		"""
 		Finds the corresponding text color to the background color.
 
 		:param str data: The same string that is used for the background color.
 		"""
-		rem = self.name_to_bg(data)
+		rem = name_to_bg(data)
 		dis = rem + 0.5
 
 		if dis > 1:
