@@ -6,12 +6,13 @@
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
 import logging
+import threading
 
 import android.runnable
 import kivy.event
 import sleekxmpp
 
-import xml.etree.ElementTree as ET
+from sleekxmpp.exceptions import IqError, IqTimeout
 
 from third_party.kivy_toaster.src.toast.androidtoast import toast
 
@@ -55,7 +56,7 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 	The class which manages the :py:class:`.RawXMPPClient` and provides the XMPP
 	API to the rest of the application.
 	"""
-	def __init__(self, server, username, password, room):
+	def __init__(self, server, username, password, room, filterB):
 		"""
 		:param tuple server: The server and port to connect to as a tuple.
 		:param str username: The username of the jid, including the XMPP domain.
@@ -69,6 +70,8 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		self.register_event_type('on_muc_receive')
 
 		self.room = room
+		self.filter = filterB
+		self.username = username
 
 		self.messages = []
 
@@ -81,15 +84,17 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		self._raw_client.add_event_handler('message', self.on_xmpp_message_receive)
 		self._raw_client.add_event_handler("muc::%s::got_online" % self.room, self.muc_online)
 		self._raw_client.add_event_handler("groupchat_message", self.on_xmpp_muc_receive)
+		self._raw_client.add_event_handler("changed_status", self.wait_for_presences)
 
 		if self._raw_client.connect(server):
 			self.logger.info("connected to xmpp server {0} {1}:{2}".format(self.jid, server[0], server[1]))
 		self._raw_client.process()
 		self.user_locations = {}
-		"""A dictionary mapping user JIDs to their last published location."""
 		self.user_moods = {}
-		"""A dictionary mapping user JIDs to their last published mood."""
 		self.users = []
+
+		self.received = set()
+		self.presences_received = threading.Event()
 
 	def update_location(self, position, altitude=None, bearing=None, speed=None):
 		"""
@@ -119,13 +124,30 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		Get the roster from the XMPP object.
 		"""
 		names = []
-		roster = self._raw_client.get_roster()
-		root = ET.fromstring(str(roster))
-		for child in root:
-			for children in child:
-				for children_object in children.items():
-					if children_object[0] == 'jid':
-						names.append(children_object[1])
+
+		try:
+			self._raw_client.get_roster()
+		except IqError as err:
+			self.logger.error('Error: %s' % err.iq['error']['condition'], exc_info=True)
+		except IqTimeout:
+			self.logger.error('Error: Request timed out', exc_info=True)
+		self._raw_client.send_presence()
+
+		self.presences_received.wait(5)
+
+		groups = self._raw_client.client_roster.groups()
+		for group in groups:
+			for jid in groups[group]:
+				connections = self._raw_client.client_roster.presence(jid)
+				if connections.items():
+					if jid != self.username:
+						if self.filter:
+							for res in connections.items():
+								if res == 'operator':
+									names.append(str(jid))			
+						else:
+							names.append(str(jid))
+
 		self.users = names
 		return names
 
@@ -242,3 +264,13 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		"""
 		if presence['muc']['nick'] != self.nick:
 			toast(presence['muc']['nick'] + " has come online", True)
+
+	def wait_for_presences(self, pres):
+		"""
+		Track how many roster entries have received presence updates.
+		"""
+		self.received.add(pres['from'].bare)
+		if len(self.received) >= len(self.client_roster.keys()):
+			self.presences_received.set()
+		else:
+			self.presences_received.clear()
