@@ -8,7 +8,7 @@
 import functools
 import logging
 import colorsys
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -22,6 +22,8 @@ from kivy.app import App
 
 from third_party.kivy_toaster.src.toast.androidtoast import toast
 from ssoper.utilities.colors import name_to_bg
+
+Message = namedtuple('Message', ['sender', 'body'])
 
 class MessageWidget(BoxLayout):
 	def __init__(self, *args, **kwargs):
@@ -172,7 +174,8 @@ class MessageWidget(BoxLayout):
 		else:
 			self.main_app.xmpp_log('info', 'receiving first message from ' + sender)
 
-		self.messages[sender.split('/')[0]].append([sender.split('@')[0], text])
+		m = Message(sender.split('@')[0], text)
+		self.messages[sender.split('/')[0]].append(m)
 
 	def on_muc_receive(self, msg):
 		"""
@@ -215,8 +218,9 @@ class MessageWidget(BoxLayout):
 			self.main_app.xmpp_log('info', 'receiving new message from ' + sender)
 		else:
 			self.main_app.xmpp_log('info', 'receiving first message from ' + sender)
-		
-		self.messages[sender.split('/')[0]].append([sender.split('/')[1], text])
+
+		m = Message(sender.split('/')[1], text)
+		self.messages[sender.split('/')[0]].append(m)
 
 	def chat_panel(self, user, event):
 		"""
@@ -236,9 +240,9 @@ class MessageWidget(BoxLayout):
 			self.new = False
 			temp = self.messages[full_name]
 			for msg in temp:
-				if not msg[0]:
+				if not msg.sender:
 					lab = Label(
-						text=msg[1],
+						text=msg.body,
 						color=(1, 1, 1, 1),
 						size_hint_y=None,
 						markup=True,
@@ -251,16 +255,16 @@ class MessageWidget(BoxLayout):
 
 				else:
 					lab = Label(
-						text=msg[0] + ": " + msg[1],
+						text=msg.sender + ": " + msg.body,
 						color=(0, 0, 0, 1),
 						size_hint_y=None,
 						markup=True,
 						halign='left'
 					)
-					lab.color = colorsys.hsv_to_rgb(self.name_to_txt(msg[0]), 1, 1)
+					lab.color = colorsys.hsv_to_rgb(self.name_to_txt(msg.sender), 1, 1)
 
 					with lab.canvas.before:
-						Color(name_to_bg(msg[0]), 1, 1, mode='hsv')
+						Color(name_to_bg(msg.sender), 1, 1, mode='hsv')
 						lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
 
 				lab.bind(width=lambda s, w: s.setter('text_size')(s, (w, None)))
@@ -311,10 +315,8 @@ class MessageWidget(BoxLayout):
 			else:
 				self.main_app.send_message(msg, user)
 
-			if user in self.messages:
-				self.messages[user].append([None, msg])
-			else:
-				self.messages[user] = [[None, msg]]
+			m = Message(None, msg)
+			self.messages[user].append(m)
 
 			lab = Label(text=msg, size_hint_y=None, color=(1, 1, 1, 1), markup=True, halign='right')
 			lab.bind(width=lambda s, w: s.setter('text_size')(s, (w, None)))
