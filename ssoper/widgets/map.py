@@ -19,12 +19,16 @@ from android.runnable import run_on_ui_thread
 import gmaps
 from jnius import autoclass
 from kivy.properties import NumericProperty
+from kivy.clock import Clock
 
 if sys.version_info >= (3, 0):
 	unicode = str
 
 # used for marker icon colors: https://developer.android.com/reference/com/google/android/gms/maps/model/BitmapDescriptorFactory.html
 BitmapDescriptorFactory = autoclass('com.google.android.gms.maps.model.BitmapDescriptorFactory')
+Polyline = autoclass('com.google.android.gms.maps.model.Polyline')
+PolylineOptions = autoclass('com.google.android.gms.maps.model.PolylineOptions')
+Color = autoclass('android.graphics.Color')
 
 # map type constants: https://developer.android.com/reference/com/google/android/gms/maps/GoogleMap.html
 MAP_TYPE_HYBRID = 4
@@ -63,6 +67,26 @@ class MapWidget(gmaps.GMap):
 		self._last_known_location_marker = None
 		self.user_markers = []
 		self.logger = logging.getLogger("kivy.operator.widgets.map")
+		llg = self.create_latlng(41.42250431870768, -81.51488542556763)
+		#self.create_view()
+		#pol = self.create_polyline(llg)
+		#llg = self.create_latlng(-81.51236414909363, 41.42243995842544)
+		#pol.add(llg)
+		#Clock.schedule_once(self.map.addPolyline(pol), 2)
+
+
+	@run_on_ui_thread
+	def create_polyline(self, coords, width = 5, color = Color.RED, geodesic = False):
+		lineOpts = PolylineOptions()
+		lineOpts.add(coords)
+		llg = self.create_latlng(41.42243995842544, -81.51236414909363)
+		lineOpts.add(llg)
+		lineOpts.width(width)
+		lineOpts.color(color)
+		#lineOpts.geodesic(geodesic)
+		print(self.map.addPolyline(lineOpts))
+		print(lineOpts)
+		return lineOpts
 
 	def create_marker(self, **kwargs):
 		"""
@@ -103,6 +127,7 @@ class MapWidget(gmaps.GMap):
 		wrapped = run_on_ui_thread(_wrapped)
 		wrapped()
 		completed.wait()
+
 		return results.pop()
 
 	@run_on_ui_thread
@@ -184,6 +209,31 @@ class MapWidget(gmaps.GMap):
 				self.user_markers.append(marker_value)
 			elif geometry.get('type') == 'LineString':
 				pass
+			elif geometry.get('type') == 'Polygon':
+				coords = []
+				for coord in geometry['coordinates']:
+					coords.append(coord)
+				stroke = feature['properties'].get('stroke', Color.BLACK) #COLOR CHANGER THING HERE
+				stroke_width = feature['properties'].get('stroke-width', 5)
+				self.draw_line(coords, Color.BLACK, stroke_width)
+
+	def draw_line(self, coordinates, stroke, stroke_width):
+		lineOpts = PolylineOptions()
+		for coord in coordinates[0]:
+			print coord
+			lineOpts.add(self.create_latlng(float(coord[1]), float(coord[0])))
+		"""
+		stroke_width = 5
+		stroke = Color.BLACK
+		if 'stroke_width' in args:
+			stroke_width = args['stroke_width']
+		if 'stroke' in args:
+			stroke = args['stroke']
+		"""
+		lineOpts.width(stroke_width)
+		lineOpts.color(stroke)
+		print(self.map.addPolyline(lineOpts))
+		print(lineOpts)
 
 	def save_marker_file(self):
 		"""
