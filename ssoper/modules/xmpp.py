@@ -145,7 +145,7 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 				if connections.items():
 					if jid != self.username:
 						if self.filter:
-							for res in connections.items():
+							for res, p in connections.items():
 								if res == 'operator':
 									names.append(str(jid))			
 						else:
