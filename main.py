@@ -106,7 +106,7 @@ class MainApp(App):
 
 		self.map.update_location((latitude, longitude), altitude, bearing, speed)
 		self.xmpp_client.update_location((latitude, longitude), altitude, bearing, speed)
-		self.messaging.get_users()
+		#self.messaging.get_users()
 		self._last_location_update = current_time
 
 	def get_users(self):

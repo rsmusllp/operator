@@ -16,6 +16,8 @@ from sleekxmpp.exceptions import IqError, IqTimeout
 
 from third_party.kivy_toaster.src.toast.androidtoast import toast
 
+PRESENCE_TIMEOUT = 10
+
 class RawXMPPClient(sleekxmpp.ClientXMPP):
 	"""The raw XMPP connection."""
 	def __init__(self, jid, password, room, nick):
@@ -56,7 +58,7 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 	The class which manages the :py:class:`.RawXMPPClient` and provides the XMPP
 	API to the rest of the application.
 	"""
-	def __init__(self, server, username, password, room, filterB):
+	def __init__(self, server, username, password, room, filter_jids):
 		"""
 		:param tuple server: The server and port to connect to as a tuple.
 		:param str username: The username of the jid, including the XMPP domain.
@@ -70,7 +72,7 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		self.register_event_type('on_muc_receive')
 
 		self.room = room
-		self.filter = filterB
+		self.filter = filter_jids
 		self.username = username
 
 		self.messages = []
@@ -123,6 +125,7 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 		"""
 		Get the roster from the XMPP object.
 		"""
+		self.presences_received.clear()
 		names = []
 
 		try:
@@ -133,7 +136,7 @@ class OperatorXMPPClient(kivy.event.EventDispatcher):
 			self.logger.error('Error: Request timed out', exc_info=True)
 		self._raw_client.send_presence()
 
-		self.presences_received.wait(5)
+		self.presences_received.wait(PRESENCE_TIMEOUT)
 
 		groups = self._raw_client.client_roster.groups()
 		for group in groups:
