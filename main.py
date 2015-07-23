@@ -27,6 +27,7 @@ Factory.register('NotesWidget', module='ssoper.widgets.notes')
 Factory.register('SoundboardWidget', module='ssoper.widgets.soundboard')
 Factory.register('RecorderWidget', module='ssoper.widgets.recorder')
 Factory.register('Toast', module='third_party.kivy_toaster.src.main')
+Factory.register('MessageWidget', module='ssoper.widgets.messaging')
 
 class MainApp(App):
 	def __init__(self, *args, **kwargs):
@@ -43,10 +44,14 @@ class MainApp(App):
 		self.xmpp_client = OperatorXMPPClient(
 			sz_utils.parse_server(self.config.get('xmpp', 'server'), 5222),
 			self.config.get('xmpp', 'username'),
-			self.config.get('xmpp', 'password')
+			self.config.get('xmpp', 'password'),
+			self.config.get('xmpp', 'room')
 		)
 		self.map = self.root.ids.map_panel_widget.ids.map_widget
+		self.messaging = self.root.ids.message_menu
 		self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
+		self.xmpp_client.bind(on_message_receive=self.on_message_receive)
+		self.xmpp_client.bind(on_muc_receive=self.on_muc_receive)
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
 
@@ -78,6 +83,12 @@ class MainApp(App):
 	def build_settings(self, settings):
 		settings.add_json_panel('Operator Settings', self.config, 'data/settings_panel.json')
 
+	def on_message_receive(self, event, msg):
+		self.messaging.on_message_receive(msg)
+
+	def on_muc_receive(self, event, msg):
+		self.messaging.on_muc_receive(msg)
+
 	def on_gps_location(self, **kwargs):
 		# kwargs on Galaxy S5 contain:
 		#   altitude, bearing, lat, lon, speed
@@ -94,7 +105,17 @@ class MainApp(App):
 
 		self.map.update_location((latitude, longitude), altitude, bearing, speed)
 		self.xmpp_client.update_location((latitude, longitude), altitude, bearing, speed)
+		self.messaging.get_users()
 		self._last_location_update = current_time
+
+	def get_users(self):
+		return self.xmpp_client.get_users()
+
+	def send_message(self, msg, user):
+		self.xmpp_client.on_message_send(msg, user)
+
+	def send_muc(self, msg, group):
+		self.xmpp_client.on_muc_send(msg, group)
 
 	def on_pause(self):
 		return False
@@ -122,6 +143,10 @@ class MainApp(App):
 			icon_color=icon_color
 		)
 		self.user_location_markers[user] = marker
+
+	def xmpp_log(self, log_type, log):
+		if log_type == 'info':
+			self.xmpp_client.logger.info(log)
 
 if __name__ == '__main__':
 	logging.captureWarnings(True)

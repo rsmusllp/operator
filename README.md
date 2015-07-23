@@ -17,3 +17,10 @@ values appropriately. To add new configuration options:
 
 Current documentation can be built locally with sphinx using the command:
 ```sphinx-build -b html docs/source docs/html```.
+
+## Credits
+Operator Development Team:
+ - Spencer McIntyre - zeroSteiner ([@zeroSteiner](https://twitter.com/zeroSteiner))
+ - Brandan Geise - coldfusion ([@coldfusion39](https://twitter.com/coldfusion39))
+ - Jeff McCutchan - jamcut ([@jamcut](https://twitter.com/jamcut))
+ - Max Schachere - maxschachere
