@@ -44,6 +44,7 @@ class MainApp(App):
 		self.xmpp_client = None
 		self.user_location_markers = {}
 		self._last_location_update = 0
+		self.toast_all = False
 		Window.bind(on_keyboard=self.on_back_btn)
 		self.android_setflag()
 
@@ -56,6 +57,7 @@ class MainApp(App):
 			self.config.get('xmpp', 'room'),
 			self.config.getboolean('xmpp', 'filter')
 		)
+		self.toast_all = self.config.getboolean('xmpp', 'toast_all')
 		self.map = self.root.ids.map_panel_widget.ids.map_widget
 		self.messaging = self.root.ids.message_menu
 		self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)

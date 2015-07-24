@@ -20,6 +20,8 @@ from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 from kivy.app import App
 
+from plyer import vibrator
+
 from third_party.kivy_toaster.src.toast.androidtoast import toast
 from ssoper.utilities.colors import name_to_bg
 
@@ -168,6 +170,11 @@ class MessageWidget(BoxLayout):
 			if self.new:
 				self.sub_layout.remove_widget(self.new_lab)
 				self.new = False
+		
+		else:
+			if self.main_app.toast_all:
+				toast(chk_sender + ": " + text, True)
+				vibrator.vibrate(.1)
 
 		if sender.split('/')[0] in self.messages:
 			self.main_app.xmpp_log('info', 'receiving new message from ' + sender)
@@ -213,6 +220,7 @@ class MessageWidget(BoxLayout):
 
 		else:
 			toast(sender.split('/')[1] + ": " + text, True)
+			vibrator.vibrate(.1)
 
 		if sender.split('/')[0] in self.messages:
 			self.main_app.xmpp_log('info', 'receiving new message from ' + sender)
