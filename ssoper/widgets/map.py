@@ -47,9 +47,17 @@ MAP_TYPE_TERRAIN = 3
 
 MAP_MARKER_FILE = '/sdcard/operator/map_markers.geojson'
 Marker = collections.namedtuple('Marker', ['geojson_feature', 'map_object'])
-Color_dict = {'azure': '#007FFF', 'blue': '#0000FF', 'cyan': '#00FFFF', 'green': '#00FF00',
-			  'magenta': '#FF00FF', 'orange': '#FF7F00', 'red': '#FF0000', 'rose': '#FF007F',
-			  'violet': '#7F00FF', 'yellow': '#FFFF00'}
+color_dict = {
+	'azure': '#007FFF',
+	'blue': '#0000FF',
+	'cyan': '#00FFFF',
+	'green': '#00FF00',
+	'magenta': '#FF00FF',
+	'orange': '#FF7F00',
+	'red': '#FF0000',
+	'rose': '#FF007F',
+	'violet': '#7F00FF',
+	'yellow': '#FFFF00'}
 
 class MapWidget(gmaps.GMap):
 	"""
@@ -221,9 +229,8 @@ class MapWidget(gmaps.GMap):
 			completed.set()
 
 		if stroke != Color.BLACK:
-			stroke = stroke.split('#')[1]
 			stroke = util_colors.hex_to_rgb(stroke)
-			stroke = Color.rgb(stroke[0], stroke[1], stroke[2])
+			stroke = Color.rgb(stroke.red, stroke.green, stroke.blue)
 		line_opts = PolylineOptions()
 
 		if len(coordinates)>1:

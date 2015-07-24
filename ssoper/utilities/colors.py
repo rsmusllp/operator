@@ -6,8 +6,10 @@
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
 import colorsys
+import string
+from collections import namedtuple
 
-_NUMERALS = '0123456789abcdefABCDEF'
+_NUMERALS = string.hexdigits
 _HEXDEC = {v: int(v, 16) for v in (x+y for x in _NUMERALS for y in _NUMERALS)}
 LOWERCASE, UPPERCASE = 'x', 'X'
 
@@ -48,15 +50,22 @@ def name_to_bg(data):
 	rem = rem/360
 	return rem
 
-def hex_to_rgb(triplet):
+def hex_to_rgb(color):
 	"""
 	Converts a hex triplet into an RGB tuple.
 
-	:param str triplet: A hex code.
+	:param str triplet: The hex code.
 	:return: RGB coordinates.
 	:rtype: tuple
 	"""
-	return _HEXDEC[triplet[0:2]], _HEXDEC[triplet[2:4]], _HEXDEC[triplet[4:6]]
+	if color.startswith('#'):
+		color = color.split('#')[1]
+	if len(color) != 6:
+		raise ValueError('hex color code is in an invalid format')
+	rgb = tuple(int(x, 16) for x in (color[i:i + 2] for i in range(0, 6, 2)))
+	RGBColorTuple = namedtuple('RGBColor', ['red', 'green', 'blue'])
+	rgb = RGBColorTuple(red=rgb[0], green=rgb[1], blue=rgb[2])
+	return rgb
 
 def hex_to_hsv(color):
 	"""
@@ -66,11 +75,7 @@ def hex_to_hsv(color):
 	:return: Hue color.
 	:rtype: int
 	"""
-	if color.startswith('#'):
-		color = color[1:]
-	if len(color) != 6:
-		raise ValueError('hex color code is in an invalid format')
-	rgb = tuple(int(x, 16) for x in (color[i:i + 2] for i in range(0, 6, 2)))
+	rgb = hex_to_rgb(color)
 	hsv = colorsys.rgb_to_hsv(*rgb)
 	hue = hsv[0] * 360
 	return hue
