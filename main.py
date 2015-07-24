@@ -45,7 +45,8 @@ class MainApp(App):
 			sz_utils.parse_server(self.config.get('xmpp', 'server'), 5222),
 			self.config.get('xmpp', 'username'),
 			self.config.get('xmpp', 'password'),
-			self.config.get('xmpp', 'room')
+			self.config.get('xmpp', 'room'),
+			self.config.getboolean('xmpp', 'filter')
 		)
 		self.map = self.root.ids.map_panel_widget.ids.map_widget
 		self.messaging = self.root.ids.message_menu
@@ -105,7 +106,7 @@ class MainApp(App):
 
 		self.map.update_location((latitude, longitude), altitude, bearing, speed)
 		self.xmpp_client.update_location((latitude, longitude), altitude, bearing, speed)
-		self.messaging.get_users()
+		#self.messaging.get_users()
 		self._last_location_update = current_time
 
 	def get_users(self):
