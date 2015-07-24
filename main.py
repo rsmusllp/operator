@@ -33,7 +33,6 @@ Factory.register('Toast', module='third_party.kivy_toaster.src.main')
 Factory.register('MessageWidget', module='ssoper.widgets.messaging')
 
 PythonActivity = autoclass('org.renpy.android.PythonActivity')
-View = autoclass('android.view.View')
 Params = autoclass('android.view.WindowManager$LayoutParams')
 
 class MainApp(App):
@@ -41,6 +40,7 @@ class MainApp(App):
 		super(MainApp, self).__init__(*args, **kwargs)
 		self.logger = logging.getLogger('kivy.operator.app')
 		self.map = None
+		self.messaging = None
 		self.xmpp_client = None
 		self.user_location_markers = {}
 		self._last_location_update = 0
