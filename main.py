@@ -18,7 +18,10 @@ from kivy.factory import Factory
 from kivy.core.window import Window
 
 from plyer import gps
+from jnius import autoclass
 from smoke_zephyr import utilities as sz_utils
+
+from android.runnable import run_on_ui_thread
 
 Factory.register('MapWidget', module='ssoper.widgets.map')
 Factory.register('ChecklistWidget', module='ssoper.widgets.checklist')
@@ -29,6 +32,10 @@ Factory.register('RecorderWidget', module='ssoper.widgets.recorder')
 Factory.register('Toast', module='third_party.kivy_toaster.src.main')
 Factory.register('MessageWidget', module='ssoper.widgets.messaging')
 
+PythonActivity = autoclass('org.renpy.android.PythonActivity')
+View = autoclass('android.view.View')
+Params = autoclass('android.view.WindowManager$LayoutParams')
+
 class MainApp(App):
 	def __init__(self, *args, **kwargs):
 		super(MainApp, self).__init__(*args, **kwargs)
@@ -38,6 +45,7 @@ class MainApp(App):
 		self.user_location_markers = {}
 		self._last_location_update = 0
 		Window.bind(on_keyboard=self.on_back_btn)
+		self.android_setflag()
 
 	def build(self):
 		self.root = RootWidget()
@@ -147,6 +155,10 @@ class MainApp(App):
 	def xmpp_log(self, log_type, log):
 		if log_type == 'info':
 			self.xmpp_client.logger.info(log)
+
+	@run_on_ui_thread
+	def android_setflag(self):
+		PythonActivity.mActivity.getWindow().addFlags(Params.FLAG_KEEP_SCREEN_ON)
 
 if __name__ == '__main__':
 	logging.captureWarnings(True)
