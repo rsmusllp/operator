@@ -140,7 +140,7 @@ class MainApp(App):
 			draggable=False,
 			title=info['user'],
 			position=info['location'],
-			icon_color=icon_color
+			marker_color=icon_color
 		)
 		self.user_location_markers[user] = marker
 

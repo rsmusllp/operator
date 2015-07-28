@@ -145,7 +145,7 @@ class MapWidget(gmaps.GMap):
 		feature = geojson.Feature(
 			geometry=geojson.Point((latlng.longitude, latlng.latitude)),
 			properties={
-				'marker-color': Color_dict.get(marker_color, '#7F00FF'),
+				'marker-color': color_dict.get(marker_color, '#7F00FF'),
 				'title': title,
 				'snippet': snippet
 			}
@@ -154,7 +154,7 @@ class MapWidget(gmaps.GMap):
 			geojson_feature=feature,
 			map_object=self.create_marker(
 				draggable=False,
-				marker_color=Color_dict.get(marker_color, '#7F00FF'),
+				marker_color=color_dict.get(marker_color, '#7F00FF'),
 				position=latlng,
 				snippet=snippet,
 				title=title
