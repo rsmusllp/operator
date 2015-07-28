@@ -18,6 +18,7 @@ class SettingsWidget(BoxLayout):
 		config.read('data/settings/config.ini')
 		self.main_app = App.get_running_app()
 		settings = SettingsWithSpinner()
+		settings.add_kivy_panel()
 		settings.add_json_panel('XMPP', config, 'data/settings/xmpp.json')
 		settings.add_json_panel('Map', config, 'data/settings/map.json')
 		self.add_widget(settings)
