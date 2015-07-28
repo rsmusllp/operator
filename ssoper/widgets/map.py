@@ -25,8 +25,8 @@ if sys.version_info >= (3, 0):
 	unicode = str
 
 BitmapDescriptorFactory = autoclass('com.google.android.gms.maps.model.BitmapDescriptorFactory')
-Polyline = autoclass('com.google.android.gms.maps.model.Polyline')
 PolylineOptions = autoclass('com.google.android.gms.maps.model.PolylineOptions')
+PolygonOptions = autoclass('com.google.android.gms.maps.model.PolygonOptions')
 Color = autoclass('android.graphics.Color')
 
 # map type constants: https://developer.android.com/reference/com/google/android/gms/maps/GoogleMap.html
@@ -200,29 +200,38 @@ class MapWidget(gmaps.GMap):
 					)
 				)
 				self.user_markers.append(marker_value)
-			elif geometry.get('type') in ('Polygon', 'LineString'):
-				coords = []
-				for coord in geometry['coordinates']:
-					coords.append(coord)
+			elif geometry.get('type') == 'LineString':
 				marker_value = Marker(
 					geojson_feature=feature,
 					map_object=self.draw_line(
-						coordinates=coords,
+						coordinates=geometry['coordinates'],
 						stroke=feature['properties'].get('stroke', Color.BLACK),
 						stroke_width=feature['properties'].get('stroke-width', 5)
 					)
 				)
 				self.user_markers.append(marker_value)
+			elif geometry.get('type') == 'Polygon':
+				marker_value = Marker(
+					geojson_feature=feature,
+					map_object=self.draw_shape(
+						coordinates=geometry['coordinates'],
+						stroke=feature['properties'].get('stroke', Color.BLACK),
+						stroke_width=feature['properties'].get('stroke-width', 5),
+						fill=feature['properties'].get('fill', Color.BLACK),
+						fill_opacity=feature['properties'].get('fill-opacity', .5)
+                                        )
+                                )
+				self.user_markers.append(marker_value)
 
 	def draw_line(self, coordinates, stroke, stroke_width):
 		"""
-		Creates a polygon/line based on GeoJson data.
+		Creates a line(s) based on GeoJson data.
 
 		:param tuple coordinates: The coordinates of all the line vertices necessary in constructing
 		the shape.
 		:param str stroke: The color of the lines.
 		:param int stroke_width: The width of the lines.
-		:return: The new polygon/line instance.
+		:return: The new line instance.
 		"""
 		def _wrapped():
 			results.append(self.map.addPolyline(line_opts))
@@ -242,6 +251,48 @@ class MapWidget(gmaps.GMap):
 
 		line_opts.width(stroke_width)
 		line_opts.color(stroke)
+		results = []
+		completed = threading.Event()
+		wrapped = run_on_ui_thread(_wrapped)
+		wrapped()
+		completed.wait()
+		return results.pop()
+
+	def draw_shape(self, coordinates, stroke, stroke_width, fill, fill_opacity):
+		"""
+		Creates a polygon shape based on GeoJson data.
+
+		:param tuple coordinates: The coordinates of all the line vertices necessary in constructing
+		the shape.
+		:param str stroke: The color of the lines.
+		:param int stroke_width: The width of the lines.
+		:param str fill: The color of the fill.
+		:param int fill_opacity: The opacity of the fill.
+		:return: The new polygon instance.
+		"""
+		def _wrapped():
+			results.append(self.map.addPolygon(shape_opts))
+			completed.set()
+
+		if stroke != Color.BLACK:
+			stroke = util_colors.hex_to_rgb(stroke)
+			stroke = Color.rgb(stroke.red, stroke.green, stroke.blue)
+		shape_opts = PolygonOptions()
+
+		if fill != Color.BLACK and fill_opacity != 1:
+			fill = util_colors.hex_to_rgb(fill)
+			fill = Color.argb(int(float(fill_opacity) * 100), fill.red, fill.green, fill.blue)
+
+		if len(coordinates) > 1:
+			for coord in coordinates:
+				shape_opts.add(self.create_latlng(float(coord[1]), float(coord[0])))
+		else:
+			for coord in coordinates[0]:
+				shape_opts.add(self.create_latlng(float(coord[1]), float(coord[0])))
+
+		shape_opts.strokeWidth(stroke_width)
+		shape_opts.strokeColor(stroke)
+		shape_opts.fillColor(fill)
 		results = []
 		completed = threading.Event()
 		wrapped = run_on_ui_thread(_wrapped)
