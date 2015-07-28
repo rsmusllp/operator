@@ -25,6 +25,9 @@
 <MessageWidget@BoxLayout>:
     id: message_layout
 
+<MenuWidget@BoxLayout>:
+    id: menu_layout
+
 <MapPanelWidget@FloatLayout>:
     id: map_panel_layout
     MapWidget:
@@ -85,30 +88,33 @@
                                 BoxLayout:
                                     id: settings_layout
                                     orientation: 'vertical'
+                                    canvas.before:
+                                        Color:
+                                            rgba: 0, 0, 0, 1
+                                        Rectangle:
+                                            pos: self.pos
+                                            size: self.size
                                     Button:
-                                        background_normal: 'data/images/settings/notes.png'
-                                        background_down: 'data/images/settings/notes.png'
+                                        text: "Notes"
                                         on_release: root.do_set_screen(self, "Notes")
                                     Button:
-                                        background_normal: 'data/images/settings/messages.png'
-                                        background_down: 'data/images/settings/messages.png'
+                                        text: "Messages"
                                         on_release: root.do_set_screen(self, "Messages")
                                     Button:
-                                        background_normal: 'data/images/settings/recorder.png'
-                                        background_down: 'data/images/settings/recorder.png'
+                                        text: "Recorder"
                                         on_release: root.do_set_screen(self, "Recorder")
                                     Button:
-                                        background_normal: 'data/images/settings/soundboard.png'
-                                        background_down: 'data/images/settings/soundboard.png'
+                                        text: "Soundboard"
                                         on_release: root.do_set_screen(self, "Soundboard")
                                     Button:
-                                        background_normal: 'data/images/settings/checklist.png'
-                                        background_down: 'data/images/settings/checklist.png'
+                                        text: "Checklist"
                                         on_release: root.do_set_screen(self, "Checklist")
                                     Button:
-                                        background_normal: 'data/images/settings/campaigns.png'
-                                        background_down: 'data/images/settings/campaigns.png'
+                                        text: "Campaigns"
                                         on_release: root.do_set_screen(self, "Campaigns")
+                                    Button:
+                                        text: "Settings"
+                                        on_release: root.do_set_screen(self, "Settings")
                 Screen:
                     name: 'Notes'
                     NotesWidget:
@@ -131,21 +137,10 @@
                         id: checklist_menu
                 Screen:
                     name: 'Campaigns'
-                    BoxLayout:
-                        id: default_layout
-                        orientation: 'vertical'
-                        spacing: 2
-                        BoxLayout:
-                            id: campaigns_panel_layout
-                            orientation: 'horizontal'
-                            size_hint: 1, .8
-                            TextInput:
-                                size_hint: 1, .85
-                                multiline: True
-                                background_color: [0,0,0,1]
-                                foreground_color: [1,1,1,1]
-                                focus: False
-                                hint_text: 'Manage campaigns here'
+                Screen:
+                    name: 'Settings'
+                    SettingsWidget:
+                        id: settings_menu
         BoxLayout:
             size_hint: 1, .1
             id: tool_panel_layout

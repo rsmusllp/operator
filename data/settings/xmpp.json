@@ -1,0 +1,45 @@
+[
+  {
+    "type": "title",
+    "title": "Connection"
+  },
+  {
+    "type": "string",
+    "title": "Server",
+    "desc": "The server to connect to",
+    "section": "xmpp",
+    "key": "server"
+  },
+  {
+    "type": "string",
+    "title": "Username",
+    "desc": "The username to authenticate with",
+    "section": "xmpp",
+    "key": "username"
+  },
+  {
+    "type": "string",
+    "title": "Room",
+    "desc": "The operator groupchat room name",
+    "section": "xmpp",
+    "key": "room"
+  },
+  {
+    "type": "title",
+    "title": "Preferences"
+  },
+  {
+    "type": "bool",
+    "title": "Filter",
+    "desc": "Filter to show only other operator users",
+    "section": "xmpp",
+    "key": "filter"
+  },
+  {
+    "type": "bool",
+    "title": "Toast",
+    "desc": "Toast when users personal message you",
+    "section": "xmpp",
+    "key": "toast_all"
+  }
+]
