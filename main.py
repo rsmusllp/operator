@@ -9,6 +9,7 @@
 import logging
 import os
 import time
+#import ConfigParser
 
 from ssoper.modules.xmpp import OperatorXMPPClient
 from ssoper.widgets.root import RootWidget
@@ -16,6 +17,7 @@ from ssoper.widgets.root import RootWidget
 from kivy.app import App
 from kivy.factory import Factory
 from kivy.core.window import Window
+from kivy.config import ConfigParser
 
 from plyer import gps
 from jnius import autoclass
@@ -31,6 +33,8 @@ Factory.register('SoundboardWidget', module='ssoper.widgets.soundboard')
 Factory.register('RecorderWidget', module='ssoper.widgets.recorder')
 Factory.register('Toast', module='third_party.kivy_toaster.src.main')
 Factory.register('MessageWidget', module='ssoper.widgets.messaging')
+Factory.register('SettingsWidget', module='ssoper.widgets.settings')
+Factory.register('MenuWidget', module='ssoper.widgets.menu')
 
 PythonActivity = autoclass('org.renpy.android.PythonActivity')
 Params = autoclass('android.view.WindowManager$LayoutParams')
@@ -44,20 +48,22 @@ class MainApp(App):
 		self.xmpp_client = None
 		self.user_location_markers = {}
 		self._last_location_update = 0
-		self.toast_all = False
 		Window.bind(on_keyboard=self.on_back_btn)
 		self.android_setflag()
+		self.start = True
+		#self.configuration = ConfigParser.RawConfigParser()
+		self.configuration = ConfigParser()
+		self.configuration.read('data/settings/config.ini')
 
 	def build(self):
 		self.root = RootWidget()
 		self.xmpp_client = OperatorXMPPClient(
-			sz_utils.parse_server(self.config.get('xmpp', 'server'), 5222),
-			self.config.get('xmpp', 'username'),
-			self.config.get('xmpp', 'password'),
-			self.config.get('xmpp', 'room'),
-			self.config.getboolean('xmpp', 'filter')
+			sz_utils.parse_server(self.configuration.get('xmpp', 'server'), 5222),
+			self.configuration.get('xmpp', 'username'),
+			self.configuration.get('xmpp', 'password'),
+			self.configuration.get('xmpp', 'room'),
+			self.configuration.getboolean('xmpp', 'filter')
 		)
-		self.toast_all = self.config.getboolean('xmpp', 'toast_all')
 		self.map = self.root.ids.map_panel_widget.ids.map_widget
 		self.messaging = self.root.ids.message_menu
 		self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
@@ -86,13 +92,13 @@ class MainApp(App):
 				config.add_section(section)
 
 		# load the custom configuration ini file
-		custom_config = os.path.join(os.path.dirname(__file__), 'config.ini')
+		custom_config = 'data/config.ini'
 		if os.path.isfile(custom_config):
 			self.logger.info('loading custom config: {0}'.format(custom_config))
 			config.update_config(custom_config, overwrite=False)
 
 	def build_settings(self, settings):
-		settings.add_json_panel('Operator Settings', self.config, 'data/settings_panel.json')
+		settings.add_json_panel('Operator Settings', self.configuration, 'data/settings_panel.json')
 
 	def on_message_receive(self, event, msg):
 		self.messaging.on_message_receive(msg)
@@ -103,10 +109,13 @@ class MainApp(App):
 	def on_gps_location(self, **kwargs):
 		# kwargs on Galaxy S5 contain:
 		#   altitude, bearing, lat, lon, speed
+		if self.start:
+			self.messaging.get_users()
+			self.start = False
 		if not ('lat' in kwargs and 'lon' in kwargs):
 			return
 		current_time = time.time()
-		if current_time - self._last_location_update < sz_utils.parse_timespan(self.config.get('miscellaneous', 'gps_update_freq')):
+		if current_time - self._last_location_update < self.configuration.getint('miscellaneous', 'gps_update_freq'):
 			return
 		latitude = kwargs.pop('lat')
 		longitude = kwargs.pop('lon')
@@ -116,7 +125,6 @@ class MainApp(App):
 
 		self.map.update_location((latitude, longitude), altitude, bearing, speed)
 		self.xmpp_client.update_location((latitude, longitude), altitude, bearing, speed)
-		#self.messaging.get_users()
 		self._last_location_update = current_time
 
 	def get_users(self):
@@ -154,6 +162,11 @@ class MainApp(App):
 			icon_color=icon_color
 		)
 		self.user_location_markers[user] = marker
+
+	def toast_status(self):
+		configuration = ConfigParser()
+		configuration.read('data/settings/config.ini')
+		return configuration.getboolean('xmpp', 'toast_all')
 
 	def xmpp_log(self, log_type, log):
 		if log_type == 'info':
