@@ -43,6 +43,8 @@ class MainApp(App):
 	def __init__(self, *args, **kwargs):
 		super(MainApp, self).__init__(*args, **kwargs)
 		self.logger = logging.getLogger('kivy.operator.app')
+		if not os.path.isdir("/sdcard/operator"):
+			os.makedirs("/sdcard/operator")
 		self.map = None
 		self.messaging = None
 		self.xmpp_client = None
@@ -71,9 +73,6 @@ class MainApp(App):
 		self.xmpp_client.bind(on_muc_receive=self.on_muc_receive)
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
-
-		if not os.path.isdir("/sdcard/operator"):
-			os.makedirs("/sdcard/operator")
 
 		return self.root
 

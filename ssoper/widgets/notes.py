@@ -30,6 +30,7 @@ class NotesWidget(BoxLayout):
 				data = data + line
 			self.text_input = TextInput(text=data, multiline=True, size_hint=(1, .9))
 		else:
+			f = open('/sdcard/operator/notes.txt', 'w')
 			self.text_input = TextInput(hint_text="Put your notes here", multiline=True, size_hint=(1, .9))
 
 		self.note_layout.add_widget(self.text_input)
