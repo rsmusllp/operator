@@ -92,7 +92,7 @@ class MainApp(App):
 				config.add_section(section)
 
 		# load the custom configuration ini file
-		custom_config = 'data/config.ini'
+		custom_config = 'data/settings/config.ini'
 		if os.path.isfile(custom_config):
 			self.logger.info('loading custom config: {0}'.format(custom_config))
 			config.update_config(custom_config, overwrite=False)
