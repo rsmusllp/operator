@@ -97,6 +97,10 @@ class MainApp(App):
 			self.logger.info('loading custom config: {0}'.format(custom_config))
 			config.update_config(custom_config, overwrite=False)
 
+	def build_settings(self, settings):
+		settings.add_json_panel('Operator Settings', self.configuration, 'data/settings/xmpp.json')
+		settings.add_json_panel('Operator Settings', self.configuration, 'data/settings/map.json')
+
 	def on_message_receive(self, event, msg):
 		self.messaging.on_message_receive(msg)
 
