@@ -12,7 +12,6 @@ import os
 import sys
 import threading
 import geojson
-import colorsys
 import collections
 
 from android.runnable import run_on_ui_thread
@@ -20,11 +19,15 @@ import gmaps
 from jnius import autoclass
 from kivy.properties import NumericProperty
 
+import ssoper.utilities.colors as util_colors
+
 if sys.version_info >= (3, 0):
 	unicode = str
 
-# used for marker icon colors: https://developer.android.com/reference/com/google/android/gms/maps/model/BitmapDescriptorFactory.html
 BitmapDescriptorFactory = autoclass('com.google.android.gms.maps.model.BitmapDescriptorFactory')
+Polyline = autoclass('com.google.android.gms.maps.model.Polyline')
+PolylineOptions = autoclass('com.google.android.gms.maps.model.PolylineOptions')
+Color = autoclass('android.graphics.Color')
 
 # map type constants: https://developer.android.com/reference/com/google/android/gms/maps/GoogleMap.html
 MAP_TYPE_HYBRID = 4
@@ -44,7 +47,18 @@ MAP_TYPE_TERRAIN = 3
 
 MAP_MARKER_FILE = '/sdcard/operator/map_markers.geojson'
 Marker = collections.namedtuple('Marker', ['geojson_feature', 'map_object'])
-Color_dict = {'azure': '#007FFF', 'blue': '#0000FF', 'cyan': '#00FFFF', 'green': '#00FF00', 'magenta': '#FF00FF', 'orange': '#FF7F00', 'red': '#FF0000', 'rose': '#FF007F', 'violet': '#7F00FF', 'yellow': '#FFFF00'}
+color_dict = {
+	'azure': '#007FFF',
+	'blue': '#0000FF',
+	'cyan': '#00FFFF',
+	'green': '#00FF00',
+	'magenta': '#FF00FF',
+	'orange': '#FF7F00',
+	'red': '#FF0000',
+	'rose': '#FF007F',
+	'violet': '#7F00FF',
+	'yellow': '#FFFF00'
+}
 
 class MapWidget(gmaps.GMap):
 	"""
@@ -70,10 +84,12 @@ class MapWidget(gmaps.GMap):
 		specified as key word arguments.
 
 		:param bool draggable: Whether the marker can be moved or not by dragging it.
-		:param marker_color: The color to use for the icon. Specified as a name or position on a color wheel.
+		:param marker_color: The color to use for the icon.
+			Specified as a name or position on a color wheel.
 		:type marker_color: float, int, str
 		:param bool move_camera: Move the camera to focus on the position of the new marker.
-		:param tuple position: The GPS coordinates of where to place the marker as a latitude and longitude pair.
+		:param tuple position: The GPS coordinates of where to place the marker as a latitude
+			and longitude pair.
 		:param str snippet: A snippet of text to display when the marker is selected.
 		:param str title: The title for the new marker:
 		:return: The new marker instance.
@@ -83,7 +99,7 @@ class MapWidget(gmaps.GMap):
 			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(marker_color)
 		elif isinstance(marker_color, (str, unicode)):
 			if marker_color.startswith('#'):
-				marker_color = self.hex_to_hsv(marker_color)
+				marker_color = util_colors.hex_to_hsv(marker_color)
 			else:
 				marker_color = getattr(BitmapDescriptorFactory, 'HUE_' + marker_color.upper())
 			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(marker_color)
@@ -103,6 +119,7 @@ class MapWidget(gmaps.GMap):
 		wrapped = run_on_ui_thread(_wrapped)
 		wrapped()
 		completed.wait()
+
 		return results.pop()
 
 	@run_on_ui_thread
@@ -128,7 +145,7 @@ class MapWidget(gmaps.GMap):
 		feature = geojson.Feature(
 			geometry=geojson.Point((latlng.longitude, latlng.latitude)),
 			properties={
-				'marker-color': Color_dict.get(marker_color, '#7F00FF'),
+				'marker-color': color_dict.get(marker_color, '#7F00FF'),
 				'title': title,
 				'snippet': snippet
 			}
@@ -137,7 +154,7 @@ class MapWidget(gmaps.GMap):
 			geojson_feature=feature,
 			map_object=self.create_marker(
 				draggable=False,
-				marker_color=Color_dict.get(marker_color, '#7F00FF'),
+				marker_color=color_dict.get(marker_color, '#7F00FF'),
 				position=latlng,
 				snippet=snippet,
 				title=title
@@ -149,7 +166,6 @@ class MapWidget(gmaps.GMap):
 		"""
 		When the map loads, the framework to load a marker file is implemented.
 		"""
-		#self.create_marker(title='SecureState', snippet='The mother ship', position=(41.4237737, -81.5143923))
 		self.is_ready = True
 		self.map.getUiSettings().setZoomControlsEnabled(False)
 		self.map.setMapType(MAP_TYPE_HYBRID)
@@ -164,8 +180,10 @@ class MapWidget(gmaps.GMap):
 		:param str filename: Location of the marker JSON.
 		"""
 		self.logger.info('loading marker file: ' + filename)
+
 		with open(filename, 'r') as file_h:
 			data = json.load(file_h)
+
 		for feature in data.get('features', []):
 			geometry = feature.get('geometry')
 			if not geometry:
@@ -182,8 +200,54 @@ class MapWidget(gmaps.GMap):
 					)
 				)
 				self.user_markers.append(marker_value)
-			elif geometry.get('type') == 'LineString':
-				pass
+			elif geometry.get('type') in ('Polygon', 'LineString'):
+				coords = []
+				for coord in geometry['coordinates']:
+					coords.append(coord)
+				marker_value = Marker(
+					geojson_feature=feature,
+					map_object=self.draw_line(
+						coordinates=coords,
+						stroke=feature['properties'].get('stroke', Color.BLACK),
+						stroke_width=feature['properties'].get('stroke-width', 5)
+					)
+				)
+				self.user_markers.append(marker_value)
+
+	def draw_line(self, coordinates, stroke, stroke_width):
+		"""
+		Creates a polygon/line based on GeoJson data.
+
+		:param tuple coordinates: The coordinates of all the line vertices necessary in constructing
+		the shape.
+		:param str stroke: The color of the lines.
+		:param int stroke_width: The width of the lines.
+		:return: The new polygon/line instance.
+		"""
+		def _wrapped():
+			results.append(self.map.addPolyline(line_opts))
+			completed.set()
+
+		if stroke != Color.BLACK:
+			stroke = util_colors.hex_to_rgb(stroke)
+			stroke = Color.rgb(stroke.red, stroke.green, stroke.blue)
+		line_opts = PolylineOptions()
+
+		if len(coordinates) > 1:
+			for coord in coordinates:
+				line_opts.add(self.create_latlng(float(coord[1]), float(coord[0])))
+		else:
+			for coord in coordinates[0]:
+				line_opts.add(self.create_latlng(float(coord[1]), float(coord[0])))
+
+		line_opts.width(stroke_width)
+		line_opts.color(stroke)
+		results = []
+		completed = threading.Event()
+		wrapped = run_on_ui_thread(_wrapped)
+		wrapped()
+		completed.wait()
+		return results.pop()
 
 	def save_marker_file(self):
 		"""
@@ -199,21 +263,6 @@ class MapWidget(gmaps.GMap):
 		with open(MAP_MARKER_FILE, 'w') as file_h:
 			geojson.dump(feature_collection, file_h)
 		self.logger.info('saved map markers')
-
-	def hex_to_hsv(self, color):
-		"""
-		Converts a color hex code to a HSV value that can be read by the Google marker API.
-
-		:param str color: The hex code.
-		"""
-		if color.startswith('#'):
-			color = color[1:]
-		if len(color) != 6:
-			raise ValueError('hex color code is in an invalid format')
-		rgb = tuple(int(x, 16) for x in (color[i:i + 2] for i in range(0, 6, 2)))
-		hsv = colorsys.rgb_to_hsv(*rgb)
-		hue = hsv[0] * 360
-		return hue
 
 	@run_on_ui_thread
 	def do_cycle_map_type(self):
