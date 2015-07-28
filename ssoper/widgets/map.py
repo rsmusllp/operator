@@ -201,32 +201,26 @@ class MapWidget(gmaps.GMap):
 				)
 				self.user_markers.append(marker_value)
 			elif geometry.get('type') == 'LineString':
-				coords = []
-				for coord in geometry['coordinates']:
-					coords.append(coord)
 				marker_value = Marker(
 					geojson_feature=feature,
 					map_object=self.draw_line(
-						coordinates=coords,
+						coordinates=geometry['coordinates'],
 						stroke=feature['properties'].get('stroke', Color.BLACK),
 						stroke_width=feature['properties'].get('stroke-width', 5)
 					)
 				)
 				self.user_markers.append(marker_value)
 			elif geometry.get('type') == 'Polygon':
-				coords = []
-				for coord in geometry['coordinates']:
-					coords.append(coord)
 				marker_value = Marker(
 					geojson_feature=feature,
 					map_object=self.draw_shape(
-						coordinates=coords,
+						coordinates=geometry['coordinates'],
 						stroke=feature['properties'].get('stroke', Color.BLACK),
 						stroke_width=feature['properties'].get('stroke-width', 5),
 						fill=feature['properties'].get('fill', Color.BLACK),
 						fill_opacity=feature['properties'].get('fill-opacity', .5)
-						)
-					)
+                                        )
+                                )
 				self.user_markers.append(marker_value)
 
 	def draw_line(self, coordinates, stroke, stroke_width):
@@ -287,7 +281,7 @@ class MapWidget(gmaps.GMap):
 
 		if fill != Color.BLACK and fill_opacity != 1:
 			fill = util_colors.hex_to_rgb(fill)
-			fill = Color.argb(int(float(fill_opacity)*100), fill.red, fill.green, fill.blue)
+			fill = Color.argb(int(float(fill_opacity) * 100), fill.red, fill.green, fill.blue)
 
 		if len(coordinates) > 1:
 			for coord in coordinates:
