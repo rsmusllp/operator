@@ -57,7 +57,8 @@ color_dict = {
 	'red': '#FF0000',
 	'rose': '#FF007F',
 	'violet': '#7F00FF',
-	'yellow': '#FFFF00'}
+	'yellow': '#FFFF00'
+}
 
 class MapWidget(gmaps.GMap):
 	"""
@@ -93,7 +94,6 @@ class MapWidget(gmaps.GMap):
 		:param str title: The title for the new marker:
 		:return: The new marker instance.
 		"""
-		BitmapDescriptorFactory = autoclass('com.google.android.gms.maps.model.BitmapDescriptorFactory')
 		marker_color = kwargs.pop('marker_color', None)
 		if isinstance(marker_color, (float, int)):
 			kwargs['icon'] = BitmapDescriptorFactory.defaultMarker(marker_color)
@@ -233,7 +233,7 @@ class MapWidget(gmaps.GMap):
 			stroke = Color.rgb(stroke.red, stroke.green, stroke.blue)
 		line_opts = PolylineOptions()
 
-		if len(coordinates)>1:
+		if len(coordinates) > 1:
 			for coord in coordinates:
 				line_opts.add(self.create_latlng(float(coord[1]), float(coord[0])))
 		else:
