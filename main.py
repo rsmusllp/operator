@@ -60,17 +60,23 @@ class MainApp(App):
 		self.start = True
 		self.configuration = ConfigParser()
 		self.configuration.read(config_path)
-		self.check_xmpp()
 		self.check_config()
 
 	def check_config(self):
 		"""
-		Evaluates the config file to make sure that all fields exist, at least corresponding to the
+		Checks to see if the config has the required XMPP fields filled out accordingly.
+		Then, it evaluates the config file to make sure that all fields exist, at least corresponding to the
 		example config file.
 		"""
 		conf = self.configuration
+
+		if conf.has_section('xmpp'):
+			if all(conf.has_option('xmpp', k) and conf.get('xmpp', k) for k in mandatory_xmpp_options):
+				self.xmpp_ok = True
+
 		def_conf = ConfigParser()
 		def_conf.read(default_config_path)
+
 		for section in def_conf.sections():
 			if conf.has_section(section):
 				for option in def_conf.options(section):
@@ -80,17 +86,9 @@ class MainApp(App):
 				conf.add_section(section)
 				for option in def_conf.options(section):
 					conf.set(section, option, def_conf.get(section, option))
+
 		self.configuration = conf
 		self.configuration.write()
-
-	def check_xmpp(self):
-		"""
-		Checks to see if the config has the required XMPP fields filled out accordingly.
-		"""
-		conf = self.configuration
-		if conf.has_section('xmpp'):
-			if all(conf.has_option('xmpp', k) and conf.get('xmpp', k) for k in mandatory_xmpp_options):
-				self.xmpp_ok = True
 
 	def build(self):
 		self.root = RootWidget()
