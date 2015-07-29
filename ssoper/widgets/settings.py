@@ -8,7 +8,6 @@
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.settings import SettingsWithSpinner
 from kivy.app import App
-from kivy.config import ConfigParser
 
 class SettingsWidget(BoxLayout):
 	def __init__(self, *args, **kwargs):

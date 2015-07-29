@@ -64,6 +64,10 @@ class MainApp(App):
 		self.check_config()
 
 	def check_config(self):
+		"""
+		Evaluates the config file to make sure that all fields exist, at least corresponding to the
+		example config file.
+		"""
 		conf = self.configuration
 		def_conf = ConfigParser()
 		def_conf.read(default_config_path)
@@ -80,9 +84,12 @@ class MainApp(App):
 		self.configuration.write()
 
 	def check_xmpp(self):
+		"""
+		Checks to see if the config has the required XMPP fields filled out accordingly.
+		"""
 		conf = self.configuration
 		if conf.has_section('xmpp'):
-			if all (conf.has_option('xmpp', k) and conf.get('xmpp', k) for k in mandatory_xmpp_options):
+			if all(conf.has_option('xmpp', k) and conf.get('xmpp', k) for k in mandatory_xmpp_options):
 				self.xmpp_ok = True
 
 	def build(self):
