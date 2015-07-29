@@ -19,6 +19,7 @@ from android.runnable import run_on_ui_thread
 import gmaps
 from jnius import autoclass
 from kivy.properties import NumericProperty
+from kivy.app import App
 
 if sys.version_info >= (3, 0):
 	unicode = str
@@ -60,6 +61,7 @@ class MapWidget(gmaps.GMap):
 		self.is_ready = False
 		"""Whether the map is ready for drawing or not yet."""
 		self.bind(on_map_click=self.on_map_widget_click, on_ready=self.on_map_widget_ready)
+		self.main_app = App.get_running_app()
 		self._last_known_location_marker = None
 		self.user_markers = []
 		self.logger = logging.getLogger("kivy.operator.widgets.map")
@@ -151,6 +153,7 @@ class MapWidget(gmaps.GMap):
 		"""
 		#self.create_marker(title='SecureState', snippet='The mother ship', position=(41.4237737, -81.5143923))
 		self.is_ready = True
+		self.main_app.root_is_ready()
 		self.map.getUiSettings().setZoomControlsEnabled(False)
 		self.map.setMapType(MAP_TYPE_HYBRID)
 		if os.access(MAP_MARKER_FILE, os.R_OK):
