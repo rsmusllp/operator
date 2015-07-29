@@ -14,9 +14,8 @@ class SettingsWidget(BoxLayout):
 	def __init__(self, *args, **kwargs):
 		super(SettingsWidget, self).__init__(*args, **kwargs)
 		self.orientation = 'vertical'
-		config = ConfigParser()
-		config.read('data/settings/config.ini')
 		self.main_app = App.get_running_app()
+		config = self.main_app.configuration
 		settings = SettingsWithSpinner()
 		settings.add_kivy_panel()
 		settings.add_json_panel('XMPP', config, 'data/settings/xmpp.json')
