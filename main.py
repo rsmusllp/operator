@@ -9,7 +9,9 @@
 import logging
 import os
 import time
-#import ConfigParser
+import sys
+import threading
+import ConfigParser as CF
 
 from ssoper.modules.xmpp import OperatorXMPPClient
 from ssoper.widgets.root import RootWidget
@@ -18,6 +20,10 @@ from kivy.app import App
 from kivy.factory import Factory
 from kivy.core.window import Window
 from kivy.config import ConfigParser
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.popup import Popup
 
 from plyer import gps
 from jnius import autoclass
@@ -45,36 +51,57 @@ class MainApp(App):
 		self.logger = logging.getLogger('kivy.operator.app')
 		if not os.path.isdir("/sdcard/operator"):
 			os.makedirs("/sdcard/operator")
+		self.configuration = ConfigParser()
 		self.map = None
 		self.messaging = None
 		self.xmpp_client = None
+		self.is_broken = False
 		self.user_location_markers = {}
 		self._last_location_update = 0
 		Window.bind(on_keyboard=self.on_back_btn)
 		self.android_setflag()
 		self.start = True
-		#self.configuration = ConfigParser.RawConfigParser()
-		self.configuration = ConfigParser()
-		self.configuration.read('data/settings/config.ini')
+
+	def root_is_ready(self):
+		self.config_check()
+
+	def config_check(self):
+		self.logger.info("Checking validity of config file")
+		try:
+			self.configuration.read('data/settings/config.ini')
+			self.configuration.get('xmpp', 'server')
+			self.configuration.get('xmpp', 'username')
+			self.configuration.get('xmpp', 'password')
+			self.configuration.get('xmpp', 'room')
+			self.configuration.getboolean('xmpp', 'filter')
+			self.configuration.getboolean('xmpp', 'toast_all')
+			self.config_ok.set()
+			self.logger.info("Config file is valid")
+		except CF.Error:
+			self.is_broken = True
+			self.error_dialogue(sys.exc_info())
 
 	def build(self):
 		self.root = RootWidget()
-		self.xmpp_client = OperatorXMPPClient(
-			sz_utils.parse_server(self.configuration.get('xmpp', 'server'), 5222),
-			self.configuration.get('xmpp', 'username'),
-			self.configuration.get('xmpp', 'password'),
-			self.configuration.get('xmpp', 'room'),
-			self.configuration.getboolean('xmpp', 'filter')
-		)
 		self.map = self.root.ids.map_panel_widget.ids.map_widget
 		self.messaging = self.root.ids.message_menu
-		self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
-		self.xmpp_client.bind(on_message_receive=self.on_message_receive)
-		self.xmpp_client.bind(on_muc_receive=self.on_muc_receive)
-		gps.configure(on_location=self.on_gps_location)
-		gps.start()
-
-		return self.root
+		try:
+			self.xmpp_client = OperatorXMPPClient(
+				sz_utils.parse_server(self.configuration.get('xmpp', 'server'), 5222),
+				self.configuration.get('xmpp', 'username'),
+				self.configuration.get('xmpp', 'password'),
+				self.configuration.get('xmpp', 'room'),
+				self.configuration.getboolean('xmpp', 'filter')
+			)
+			self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
+			self.xmpp_client.bind(on_message_receive=self.on_message_receive)
+			self.xmpp_client.bind(on_muc_receive=self.on_muc_receive)
+			gps.configure(on_location=self.on_gps_location)
+			gps.start()
+			return self.root
+		except CF.Error:
+			#This will be caught later on
+			pass
 
 	def on_back_btn(self, window, key, *args):
 		""" To be called whenever user presses Back/Esc Key """
@@ -97,8 +124,12 @@ class MainApp(App):
 			config.update_config(custom_config, overwrite=False)
 
 	def build_settings(self, settings):
-		settings.add_json_panel('XMPP', self.configuration, 'data/settings/xmpp.json')
-		settings.add_json_panel('Map', self.configuration, 'data/settings/map.json')
+		try:
+			settings.add_json_panel('XMPP', self.configuration, 'data/settings/xmpp.json')
+			settings.add_json_panel('Map', self.configuration, 'data/settings/map.json')
+		except CF.Error:
+			#This wil be caught later on
+			pass
 
 	def on_message_receive(self, event, msg):
 		self.messaging.on_message_receive(msg)
@@ -143,8 +174,9 @@ class MainApp(App):
 		pass
 
 	def on_stop(self):
-		self.map.save_marker_file()
-		self.xmpp_client.shutdown()
+		if not self.is_broken:
+			self.map.save_marker_file()
+			self.xmpp_client.shutdown()
 
 	def on_user_location_update(self, _, info):
 		if not self.map.is_ready:
@@ -171,6 +203,21 @@ class MainApp(App):
 	def xmpp_log(self, log_type, log):
 		if log_type == 'info':
 			self.xmpp_client.logger.info(log)
+
+	def error_dialogue(self, msg):
+		"""
+		Popup confirming with the user whether they want to exit the application.
+		"""
+		self.logger.error(str(msg[0]) + ": " + str(msg[1]))
+		confirmation_box = BoxLayout(orientation='vertical')
+		confirmation_box.add_widget(Label(text=str(msg[1])))
+		box_int = BoxLayout(orientation='horizontal', spacing=50)
+		close_button = Button(text='Close')
+		close_button.bind(on_release=lambda x: self.stop())
+		box_int.add_widget(close_button)
+		confirmation_box.add_widget(box_int)
+		self.confirmation_popup = Popup(title='Error with Config', content=confirmation_box, size_hint=(.7, None), size=(500, 500), auto_dismiss=False)
+		self.confirmation_popup.open()
 
 	@run_on_ui_thread
 	def android_setflag(self):

@@ -5,6 +5,9 @@
 #
 # THIS IS PROPRIETARY SOFTWARE AND IS NOT TO BE PUBLICLY DISTRIBUTED
 
+import sys
+import ConfigParser as CF
+
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.settings import SettingsWithSpinner
 from kivy.app import App
@@ -19,8 +22,14 @@ class SettingsWidget(BoxLayout):
 		self.main_app = App.get_running_app()
 		settings = SettingsWithSpinner()
 		settings.add_kivy_panel()
-		settings.add_json_panel('XMPP', config, 'data/settings/xmpp.json')
-		settings.add_json_panel('Map', config, 'data/settings/map.json')
+
+		try:
+			settings.add_json_panel('XMPP', config, 'data/settings/xmpp.json')
+			settings.add_json_panel('Map', config, 'data/settings/map.json')
+		except CF.Error:
+			#This will get caught later on
+			pass
+
 		self.add_widget(settings)
 		settings.bind(on_close=lambda x: self.close_button())
 
