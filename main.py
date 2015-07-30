@@ -214,6 +214,10 @@ class MainApp(App):
 	def android_setflag(self):
 		PythonActivity.mActivity.getWindow().addFlags(Params.FLAG_KEEP_SCREEN_ON)
 
+	def update_mood(self, mood):
+		if self.xmpp_client:
+			self.xmpp_client.update_mood(mood)
+
 if __name__ == '__main__':
 	logging.captureWarnings(True)
 	MainApp().run()

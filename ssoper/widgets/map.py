@@ -219,8 +219,8 @@ class MapWidget(gmaps.GMap):
 						stroke_width=feature['properties'].get('stroke-width', 5),
 						fill=feature['properties'].get('fill', Color.BLACK),
 						fill_opacity=feature['properties'].get('fill-opacity', .5)
-                                        )
-                                )
+					)
+				)
 				self.user_markers.append(marker_value)
 
 	def draw_line(self, coordinates, stroke, stroke_width):

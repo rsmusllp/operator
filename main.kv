@@ -56,15 +56,15 @@
             Button:
                 background_normal: 'data/images/status/good.jpg'
                 background_down: 'data/images/status/good_pressed.jpg'
-                on_release: app.xmpp_client.update_mood('happy')
+                on_release: app.update_mood('happy')
             Button:
                 background_normal: 'data/images/status/neutral.jpg'
                 background_down: 'data/images/status/neutral_pressed.jpg'
-                on_release: app.xmpp_client.update_mood('calm')
+                on_release: app.update_mood('calm')
             Button:
                 background_normal: 'data/images/status/bad.jpg'
                 background_down: 'data/images/status/bad_pressed.jpg'
-                on_release: app.xmpp_client.update_mood('angry')
+                on_release: app.update_mood('angry')
         BoxLayout
             ScreenManager:
                 id: screen_manager
