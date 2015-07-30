@@ -22,7 +22,6 @@ from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.screenmanager import Screen
 
 from plyer import gps
 from jnius import autoclass
@@ -253,9 +252,11 @@ class MainApp(App):
 		self.bl = BoxLayout(orientation='vertical')
 		self.bl.add_widget(
 			Button(
-				size_hint=(1,1),
+				size_hint=(1, 1),
 				background_color=[0, 0, 0, 1],
-				on_release=lambda x: self.lock_button()))
+				on_release=lambda x: self.lock_button()
+			)
+		)
 		self.root.add_widget(self.bl)
 
 	def lock_button(self):
@@ -270,8 +271,7 @@ class MainApp(App):
 		if len(self.lock_btn_presses) == self.configuration.getint('miscellaneous', 'lockout_clicks'):
 			self.root.remove_widget(self.bl)
 			self.root.add_widget(self.removed)
-			self.lock_btn_presses=[]
-
+			self.lock_btn_presses = []
 
 	@run_on_ui_thread
 	def android_setflag(self):
