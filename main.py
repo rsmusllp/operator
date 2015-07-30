@@ -18,6 +18,11 @@ from kivy.app import App
 from kivy.factory import Factory
 from kivy.core.window import Window
 from kivy.config import ConfigParser
+from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import Screen
 
 from plyer import gps
 from jnius import autoclass
@@ -42,6 +47,7 @@ MANDATORY_XMPP_OPTIONS = ('username', 'password', 'server')
 
 PythonActivity = autoclass('org.renpy.android.PythonActivity')
 Params = autoclass('android.view.WindowManager$LayoutParams')
+View = autoclass('android.view.View')
 
 class MainApp(App):
 	def __init__(self, *args, **kwargs):
@@ -58,6 +64,8 @@ class MainApp(App):
 		self.android_setflag()
 		self.xmpp_config_ok = False
 		self.start = True
+		self.confirmation_popup = Popup()
+		self.lock_btn_presses = []
 		self.configuration = ConfigParser()
 		self.configuration.read(CONFIG_PATH)
 		self.check_config()
@@ -209,6 +217,61 @@ class MainApp(App):
 	def xmpp_log(self, log_type, log):
 		if log_type == 'info':
 			self.xmpp_client.logger.info(log)
+
+	def prompt_lock_screen(self):
+		"""
+		Popup confirming with the user whether they want to lock the screen.
+		"""
+		confirmation_box = BoxLayout(orientation='vertical')
+		confirmation_box.add_widget(Label(text='Do you want to lock the screen?'))
+		box_int = BoxLayout(orientation='horizontal', spacing=50)
+		affirm_button = Button(text='Yes')
+		affirm_button.bind(on_release=lambda x: self.lock_screen())
+		dismiss_button = Button(text='Cancel')
+		dismiss_button.bind(on_release=lambda x: self.confirmation_popup.dismiss())
+		box_int.add_widget(affirm_button)
+		box_int.add_widget(dismiss_button)
+		confirmation_box.add_widget(box_int)
+		self.confirmation_popup = Popup(title='Confirmation', content=confirmation_box, size_hint=(.7, None), size=(500, 500), auto_dismiss=False)
+		self.confirmation_popup.open()
+
+	@run_on_ui_thread
+	def lock_screen(self):
+		"""
+		Lock the screen by going to a black layout and not allowing input. Will disable after 10 taps.
+		"""
+		self.confirmation_popup.dismiss()
+		flag = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+		PythonActivity.mActivity.getWindow().getDecorView().setSystemUiVisibility(flag)
+		mb = True
+		for child in self.root.walk():
+			if hasattr(child, 'name'):
+				if child.name == 'root' and mb:
+					self.removed = child
+					child.parent.remove_widget(child)
+					mb = False
+		self.bl = BoxLayout(orientation='vertical')
+		self.bl.add_widget(
+			Button(
+				size_hint=(1,1),
+				background_color=[0, 0, 0, 1],
+				on_release=lambda x: self.lock_button()))
+		self.root.add_widget(self.bl)
+
+	def lock_button(self):
+		"""
+		Registers clicks on the locked screen. Only counts clicks within 10 second gap.
+		"""
+		current_time = time.time()
+		self.lock_btn_presses.append(current_time)
+		while current_time - self.lock_btn_presses[0] > self.configuration.getint('miscellaneous', 'lockout_timeout'):
+			del self.lock_btn_presses[0]
+
+		if len(self.lock_btn_presses) == self.configuration.getint('miscellaneous', 'lockout_clicks'):
+			self.root.remove_widget(self.bl)
+			self.root.add_widget(self.removed)
+			self.lock_btn_presses=[]
+
 
 	@run_on_ui_thread
 	def android_setflag(self):
