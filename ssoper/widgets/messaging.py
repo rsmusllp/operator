@@ -19,6 +19,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 from kivy.app import App
+from android.runnable import run_on_ui_thread
 
 from plyer import vibrator
 
@@ -46,7 +47,7 @@ class MessageWidget(BoxLayout):
 		self.chatting = None
 		self.reply = TextInput()
 		self.main_app = App.get_running_app()
-		self.gen_menu()
+		self.check_xmpp()
 		self.new_lab = Label()
 		self.new = False
 
@@ -91,6 +92,34 @@ class MessageWidget(BoxLayout):
 
 		if not self.chatting:
 			self.gen_menu()
+
+	@run_on_ui_thread
+	def check_xmpp(self):
+		"""
+		Check if xmpp is enabled.
+		"""
+		if self.main_app.xmpp_config_ok:
+			self.gen_menu()
+		else:
+			self.disabled_menu()
+
+	def disabled_menu(self):
+		"""
+		Creates a disabled messaging menu should xmpp be disabled.
+		"""
+		self.clear_widgets()
+		sub_layout = BoxLayout(size_hint=(1,1))
+		sub_layout.clear_widgets()
+		lab = Label(text='XMPP messaging is disabled due to config errors!', size_hint=(1, 1), markup=True)
+		lab.color = colorsys.hsv_to_rgb(0, 0, 1)
+
+		with lab.canvas.before:
+			Color(1, 1, 0, mode='hsv')
+			lab.bg_rect = Rectangle(pos=self.pos, size=self.size)
+
+		lab.bind(pos=self.redraw, size=self.redraw)
+		sub_layout.add_widget(lab)
+		self.add_widget(sub_layout)
 
 	def gen_menu(self):
 		"""

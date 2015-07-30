@@ -36,6 +36,10 @@ Factory.register('MessageWidget', module='ssoper.widgets.messaging')
 Factory.register('SettingsWidget', module='ssoper.widgets.settings')
 Factory.register('MenuWidget', module='ssoper.widgets.menu')
 
+CONFIG_PATH = 'data/settings/config.ini'
+DEFAULT_CONFIG_PATH = 'data/settings/config.example.ini'
+MANDATORY_XMPP_OPTIONS = ('username', 'password', 'server')
+
 PythonActivity = autoclass('org.renpy.android.PythonActivity')
 Params = autoclass('android.view.WindowManager$LayoutParams')
 
@@ -52,28 +56,60 @@ class MainApp(App):
 		self._last_location_update = 0
 		Window.bind(on_keyboard=self.on_back_btn)
 		self.android_setflag()
+		self.xmpp_config_ok = False
 		self.start = True
-		#self.configuration = ConfigParser.RawConfigParser()
 		self.configuration = ConfigParser()
-		self.configuration.read('data/settings/config.ini')
+		self.configuration.read(CONFIG_PATH)
+		self.check_config()
+
+	def check_config(self):
+		"""
+		Checks to see if the config has the required XMPP fields filled out accordingly.
+		Then, it evaluates the config file to make sure that all fields exist, at least corresponding to the
+		example config file.
+		"""
+		conf = self.configuration
+
+		if conf.has_section('xmpp'):
+			if all(conf.has_option('xmpp', k) and conf.get('xmpp', k) for k in MANDATORY_XMPP_OPTIONS):
+				self.xmpp_config_ok = True
+
+		def_conf = ConfigParser()
+		def_conf.read(DEFAULT_CONFIG_PATH)
+
+		for section in def_conf.sections():
+			if conf.has_section(section):
+				for option in def_conf.options(section):
+					if not conf.has_option(section, option) or conf.get(section, option) is None:
+						conf.set(section, option, def_conf.get(section, option))
+			else:
+				conf.add_section(section)
+				for option in def_conf.options(section):
+					conf.set(section, option, def_conf.get(section, option))
+
+		self.configuration = conf
+		self.configuration.write()
 
 	def build(self):
 		self.root = RootWidget()
-		self.xmpp_client = OperatorXMPPClient(
-			sz_utils.parse_server(self.configuration.get('xmpp', 'server'), 5222),
-			self.configuration.get('xmpp', 'username'),
-			self.configuration.get('xmpp', 'password'),
-			self.configuration.get('xmpp', 'room'),
-			self.configuration.getboolean('xmpp', 'filter')
-		)
+		if self.xmpp_config_ok:
+			self.xmpp_client = OperatorXMPPClient(
+				sz_utils.parse_server(self.configuration.get('xmpp', 'server'), 5222),
+				self.configuration.get('xmpp', 'username'),
+				self.configuration.get('xmpp', 'password'),
+				self.configuration.get('xmpp', 'room'),
+				self.configuration.getboolean('xmpp', 'filter')
+			)
+			self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
+			self.xmpp_client.bind(on_message_receive=self.on_message_receive)
+			self.xmpp_client.bind(on_muc_receive=self.on_muc_receive)
+		else:
+			self.logger.warning("XMMP config invalid, disabling XMPP operations")
+
 		self.map = self.root.ids.map_panel_widget.ids.map_widget
 		self.messaging = self.root.ids.message_menu
-		self.xmpp_client.bind(on_user_location_update=self.on_user_location_update)
-		self.xmpp_client.bind(on_message_receive=self.on_message_receive)
-		self.xmpp_client.bind(on_muc_receive=self.on_muc_receive)
 		gps.configure(on_location=self.on_gps_location)
 		gps.start()
-
 		return self.root
 
 	def on_back_btn(self, window, key, *args):
@@ -110,7 +146,8 @@ class MainApp(App):
 		# kwargs on Galaxy S5 contain:
 		#   altitude, bearing, lat, lon, speed
 		if self.start:
-			self.messaging.get_users()
+			if self.xmpp_client:
+				self.messaging.get_users()
 			self.start = False
 		if not ('lat' in kwargs and 'lon' in kwargs):
 			return
@@ -124,7 +161,8 @@ class MainApp(App):
 		speed = kwargs.pop('speed', None)
 
 		self.map.update_location((latitude, longitude), altitude, bearing, speed)
-		self.xmpp_client.update_location((latitude, longitude), altitude, bearing, speed)
+		if self.xmpp_client:
+			self.xmpp_client.update_location((latitude, longitude), altitude, bearing, speed)
 		self._last_location_update = current_time
 
 	def get_users(self):
@@ -144,7 +182,8 @@ class MainApp(App):
 
 	def on_stop(self):
 		self.map.save_marker_file()
-		self.xmpp_client.shutdown()
+		if self.xmpp_client:
+			self.xmpp_client.shutdown()
 
 	def on_user_location_update(self, _, info):
 		if not self.map.is_ready:
@@ -153,7 +192,8 @@ class MainApp(App):
 		user = info['user']
 		if user in self.user_location_markers:
 			self.user_location_markers[user].remove()
-		user_mood = self.xmpp_client.user_moods.get(user, 'calm')
+		if self.xmpp_client:
+			user_mood = self.xmpp_client.user_moods.get(user, 'calm')
 		icon_color = {'angry': 'red', 'calm': 'yellow', 'happy': 'green'}.get(user_mood, 'yellow')
 		marker = self.map.create_marker(
 			draggable=False,
@@ -164,9 +204,7 @@ class MainApp(App):
 		self.user_location_markers[user] = marker
 
 	def toast_status(self):
-		configuration = ConfigParser()
-		configuration.read('data/settings/config.ini')
-		return configuration.getboolean('xmpp', 'toast_all')
+		return self.configuration.getboolean('xmpp', 'toast_all')
 
 	def xmpp_log(self, log_type, log):
 		if log_type == 'info':
@@ -175,6 +213,10 @@ class MainApp(App):
 	@run_on_ui_thread
 	def android_setflag(self):
 		PythonActivity.mActivity.getWindow().addFlags(Params.FLAG_KEEP_SCREEN_ON)
+
+	def update_mood(self, mood):
+		if self.xmpp_client:
+			self.xmpp_client.update_mood(mood)
 
 if __name__ == '__main__':
 	logging.captureWarnings(True)
