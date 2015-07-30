@@ -36,9 +36,9 @@ Factory.register('MessageWidget', module='ssoper.widgets.messaging')
 Factory.register('SettingsWidget', module='ssoper.widgets.settings')
 Factory.register('MenuWidget', module='ssoper.widgets.menu')
 
-config_path = 'data/settings/config.ini'
-default_config_path = 'data/settings/config.example.ini'
-mandatory_xmpp_options = ('username', 'password', 'server')
+CONFIG_PATH = 'data/settings/config.ini'
+DEFAULT_CONFIG_PATH = 'data/settings/config.example.ini'
+MANDATORY_XMPP_OPTIONS = ('username', 'password', 'server')
 
 PythonActivity = autoclass('org.renpy.android.PythonActivity')
 Params = autoclass('android.view.WindowManager$LayoutParams')
@@ -56,10 +56,10 @@ class MainApp(App):
 		self._last_location_update = 0
 		Window.bind(on_keyboard=self.on_back_btn)
 		self.android_setflag()
-		self.xmpp_ok = False
+		self.xmpp_config_ok = False
 		self.start = True
 		self.configuration = ConfigParser()
-		self.configuration.read(config_path)
+		self.configuration.read(CONFIG_PATH)
 		self.check_config()
 
 	def check_config(self):
@@ -71,11 +71,11 @@ class MainApp(App):
 		conf = self.configuration
 
 		if conf.has_section('xmpp'):
-			if all(conf.has_option('xmpp', k) and conf.get('xmpp', k) for k in mandatory_xmpp_options):
-				self.xmpp_ok = True
+			if all(conf.has_option('xmpp', k) and conf.get('xmpp', k) for k in MANDATORY_XMPP_OPTIONS):
+				self.xmpp_config_ok = True
 
 		def_conf = ConfigParser()
-		def_conf.read(default_config_path)
+		def_conf.read(DEFAULT_CONFIG_PATH)
 
 		for section in def_conf.sections():
 			if conf.has_section(section):
@@ -92,7 +92,7 @@ class MainApp(App):
 
 	def build(self):
 		self.root = RootWidget()
-		if self.xmpp_ok:
+		if self.xmpp_config_ok:
 			self.xmpp_client = OperatorXMPPClient(
 				sz_utils.parse_server(self.configuration.get('xmpp', 'server'), 5222),
 				self.configuration.get('xmpp', 'username'),
@@ -146,7 +146,7 @@ class MainApp(App):
 		# kwargs on Galaxy S5 contain:
 		#   altitude, bearing, lat, lon, speed
 		if self.start:
-			if self.xmpp_ok:
+			if self.xmpp_client:
 				self.messaging.get_users()
 			self.start = False
 		if not ('lat' in kwargs and 'lon' in kwargs):
@@ -161,7 +161,7 @@ class MainApp(App):
 		speed = kwargs.pop('speed', None)
 
 		self.map.update_location((latitude, longitude), altitude, bearing, speed)
-		if self.xmpp_ok:
+		if self.xmpp_client:
 			self.xmpp_client.update_location((latitude, longitude), altitude, bearing, speed)
 		self._last_location_update = current_time
 
@@ -182,7 +182,7 @@ class MainApp(App):
 
 	def on_stop(self):
 		self.map.save_marker_file()
-		if self.xmpp_ok:
+		if self.xmpp_client:
 			self.xmpp_client.shutdown()
 
 	def on_user_location_update(self, _, info):
@@ -192,7 +192,7 @@ class MainApp(App):
 		user = info['user']
 		if user in self.user_location_markers:
 			self.user_location_markers[user].remove()
-		if self.xmpp_ok:
+		if self.xmpp_client:
 			user_mood = self.xmpp_client.user_moods.get(user, 'calm')
 		icon_color = {'angry': 'red', 'calm': 'yellow', 'happy': 'green'}.get(user_mood, 'yellow')
 		marker = self.map.create_marker(
