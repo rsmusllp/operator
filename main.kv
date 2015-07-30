@@ -48,8 +48,10 @@
     screen_manager: screen_manager
     BoxLayout:
         id: root_widget
+        name: 'root'
         orientation: 'vertical'
         BoxLayout:
+            name: 'mood_bar'
             id: status_panel_layout
             orientation: 'horizontal'
             size_hint: 1, .1
@@ -146,10 +148,16 @@
             id: tool_panel_layout
             orientation: 'horizontal'
             name: 'bar'
+            canvas.before:
+                Color:
+                    rgba: 0, 0, 0, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
             Button:
-                background_normal: 'data/images/nav/camera.png'
-                background_down: 'data/images/nav/camera.png'
-                on_release: root.do_take_picture()
+                background_normal: 'data/images/nav/lock.png'
+                background_down: 'data/images/nav/lock.png'
+                on_release: app.prompt_lock_screen()
             Button:
                 background_normal: 'data/images/nav/map.png'
                 background_down: 'data/images/nav/map.png'
