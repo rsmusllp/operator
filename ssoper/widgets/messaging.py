@@ -87,7 +87,7 @@ class MessageWidget(BoxLayout):
 		for user in users:
 			self.users[user.split('@')[0]] = user
 
-		#self.users['Operator Group'] = 'operator@public.bt'
+		self.users['Operator Group'] = 'operator@public.bt'
 		self.main_app.xmpp_log('info', 'updating user list')
 
 		if not self.chatting:
