@@ -74,18 +74,26 @@ class RootWidget(BoxLayout):
 			self.prompt_close()
 		return True
 
-	def do_set_screen(self, btn, next_screen):
+	def do_set_screen(self, btn, dest_screen):
 		"""
-		Dyanmic screen manager. Sets the screen, reading in commands from KV file.
+		Dynamic screen manager. Sets the screen, reading in commands from KV file.
 
 		:param btn: Button where the change of screen was requested.
 		:type btn: :py:class:`kivy.uix.button.Button`
-		:param str next_screen: String indicating the name of the next screen to switch to.
+		:param str dest_screen: String indicating the name of the next screen to switch to.
 		"""
-		current_screen_name = self.screen_manager.current_screen.name
-		if current_screen_name != next_screen:
-			self.list_of_prev_screens.append(current_screen_name)
-		self.screen_manager.current = next_screen
+		src_screen = self.screen_manager.current_screen.name
+
+		if src_screen != dest_screen:
+			if len(self.list_of_prev_screens) == 0:
+				self.list_of_prev_screens.append(src_screen)
+			elif self.list_of_prev_screens[-1] != dest_screen:
+				self.list_of_prev_screens.append(src_screen)
+
+		while len(self.list_of_prev_screens) >= 25:
+			del self.list_of_prev_screens[0]
+
+		self.screen_manager.current = dest_screen
 
 	def prompt_close(self):
 		"""
