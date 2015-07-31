@@ -108,7 +108,7 @@ class MessageWidget(BoxLayout):
 		Creates a disabled messaging menu should xmpp be disabled.
 		"""
 		self.clear_widgets()
-		sub_layout = BoxLayout(size_hint=(1,1))
+		sub_layout = BoxLayout(size_hint=(1, 1))
 		sub_layout.clear_widgets()
 		lab = Label(text='XMPP messaging is disabled due to config errors!', size_hint=(1, 1), markup=True)
 		lab.color = colorsys.hsv_to_rgb(0, 0, 1)
@@ -141,8 +141,11 @@ class MessageWidget(BoxLayout):
 		op_chat = Button(
 			text='Group Chat: OPERATOR',
 			size_hint_y=None,
-			height=100,
-			on_release=functools.partial(self.chat_panel, 'Operator Group')
+			height=180,
+			color=[0, 0, 0, 1],
+			on_release=functools.partial(self.chat_panel, 'Operator Group'),
+			background_normal='',
+			background_color=[.5, 1, .5, 1]
 		)
 		sub_layout.add_widget(op_chat)
 
@@ -151,7 +154,10 @@ class MessageWidget(BoxLayout):
 				text=name,
 				size_hint_y=None,
 				height=100,
-				on_release=functools.partial(self.chat_panel, name)
+				color=[1, 1, 1, 1],
+				on_release=functools.partial(self.chat_panel, name),
+				background_normal='',
+				background_color=[0, .3, .3, 1]
 			)
 			sub_layout.add_widget(lab)
 
@@ -159,7 +165,10 @@ class MessageWidget(BoxLayout):
 			text="Refresh Users",
 			size_hint_y=None,
 			on_release=lambda x: self.get_users(),
-			height=100
+			height=180,
+			color=[0, 0, 0, 1],
+			background_normal='',
+			background_color=[0, 1, 0, 1]
 		)
 		self.message_layout.add_widget(refresh)
 		self.message_layout.add_widget(sub_layout)
@@ -199,7 +208,6 @@ class MessageWidget(BoxLayout):
 			if self.new:
 				self.sub_layout.remove_widget(self.new_lab)
 				self.new = False
-		
 		else:
 			if self.main_app.toast_all:
 				toast(chk_sender + ": " + text, True)
@@ -314,19 +322,19 @@ class MessageWidget(BoxLayout):
 			self.new = True
 			self.sub_layout.add_widget(self.new_lab)
 
-		bottom = BoxLayout(size_hint_y=None, height=80)
+		bottom = BoxLayout(size_hint_y=None, height=130)
 		self.reply = TextInput(hint_text="Write a message...")
 		title = Label(text=user, halign='left', color=(0, 0, 0, 1))
 
 		send = Button(
 			text="Send",
-			size_hint_x=.2,
+			size_hint_x=.25,
 			on_release=functools.partial(self.send_message, full_name)
 		)
 		bottom.add_widget(self.reply)
 		bottom.add_widget(send)
-		header = BoxLayout(size_hint_y=None, height=80)
-		back_btn = Button(text='< Recent', size_hint_x=.3, on_release=lambda x: self.gen_menu())
+		header = BoxLayout(size_hint_y=None, height=130)
+		back_btn = Button(text='< Recent', size_hint_x=.5, on_release=lambda x: self.gen_menu())
 		presence = Label(size_hint_x=.3)
 		header.add_widget(back_btn)
 		header.add_widget(title)
