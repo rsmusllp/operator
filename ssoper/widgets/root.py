@@ -76,7 +76,7 @@ class RootWidget(BoxLayout):
 
 	def do_set_screen(self, btn, dest_screen):
 		"""
-		Dyanmic screen manager. Sets the screen, reading in commands from KV file.
+		Dynamic screen manager. Sets the screen, reading in commands from KV file.
 
 		:param btn: Button where the change of screen was requested.
 		:type btn: :py:class:`kivy.uix.button.Button`
