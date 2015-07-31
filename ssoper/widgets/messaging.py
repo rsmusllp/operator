@@ -24,7 +24,7 @@ from android.runnable import run_on_ui_thread
 from plyer import vibrator
 
 from third_party.kivy_toaster.src.toast.androidtoast import toast
-from ssoper.utilities.colors import name_to_bg
+from ssoper.utilities.colors import name_to_bg, hex_to_rgb
 
 Message = namedtuple('Message', ['sender', 'body'])
 
@@ -87,7 +87,7 @@ class MessageWidget(BoxLayout):
 		for user in users:
 			self.users[user.split('@')[0]] = user
 
-		self.users['Operator Group'] = 'operator@public.bt'
+		#self.users['Operator Group'] = 'operator@public.bt'
 		self.main_app.xmpp_log('info', 'updating user list')
 
 		if not self.chatting:
@@ -142,7 +142,10 @@ class MessageWidget(BoxLayout):
 			text='Group Chat: OPERATOR',
 			size_hint_y=None,
 			height=100,
-			on_release=functools.partial(self.chat_panel, 'Operator Group')
+			color=[0, 0, 0, 1],
+			on_release=functools.partial(self.chat_panel, 'Operator Group'),
+			background_normal='',
+			background_color=[.5, 1, .5, 1]
 		)
 		sub_layout.add_widget(op_chat)
 
@@ -151,7 +154,10 @@ class MessageWidget(BoxLayout):
 				text=name,
 				size_hint_y=None,
 				height=100,
-				on_release=functools.partial(self.chat_panel, name)
+				color=[1, 1, 1, 1],
+				on_release=functools.partial(self.chat_panel, name),
+				background_normal='',
+				background_color=[0, .3, .3, 1]
 			)
 			sub_layout.add_widget(lab)
 
@@ -159,7 +165,10 @@ class MessageWidget(BoxLayout):
 			text="Refresh Users",
 			size_hint_y=None,
 			on_release=lambda x: self.get_users(),
-			height=100
+			height=100,
+			color=[0, 0, 0, 1],
+			background_normal='',
+			background_color=[0, 1, 0, 1]
 		)
 		self.message_layout.add_widget(refresh)
 		self.message_layout.add_widget(sub_layout)
