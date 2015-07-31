@@ -141,7 +141,7 @@ class MessageWidget(BoxLayout):
 		op_chat = Button(
 			text='Group Chat: OPERATOR',
 			size_hint_y=None,
-			height=100,
+			height=180,
 			color=[0, 0, 0, 1],
 			on_release=functools.partial(self.chat_panel, 'Operator Group'),
 			background_normal='',
@@ -165,7 +165,7 @@ class MessageWidget(BoxLayout):
 			text="Refresh Users",
 			size_hint_y=None,
 			on_release=lambda x: self.get_users(),
-			height=100,
+			height=180,
 			color=[0, 0, 0, 1],
 			background_normal='',
 			background_color=[0, 1, 0, 1]
