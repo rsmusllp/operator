@@ -23,7 +23,7 @@ source.include_exts = atlas, ini, jpg, json, kv, png, py, wav
 #version.filename = %(source.dir)s/main.py
 
 # (str) Application versioning (method 2)
-version = 0.0.1
+version = 1.0.0
 
 # (list) Application requirements
 # comma seperated e.g. requirements = sqlite3,kivy
